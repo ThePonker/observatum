@@ -1,0 +1,6 @@
+PyQt5
+folium
+pandas
+sqlalchemy
+geopandas
+shapely

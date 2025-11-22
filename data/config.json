@@ -1,0 +1,13 @@
+{
+    "default_recorder": "",
+    "default_determiner": "",
+    "default_certainty": "Certain",
+    "default_sample_method": "",
+    "default_observation_type": "",
+    "theme": "Dark",
+    "font_size": "Small",
+    "show_grid_lines": true,
+    "confirm_deletions": true,
+    "auto_save": false,
+    "backup_frequency": "Weekly"
+}

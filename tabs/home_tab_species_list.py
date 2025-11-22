@@ -1,0 +1,1 @@
+"""Recent species list widget."""
