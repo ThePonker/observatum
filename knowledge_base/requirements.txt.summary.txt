@@ -1,0 +1,16 @@
+﻿Text File Summary:
+- First lines:
+PyQt5
+folium
+pandas
+sqlalchemy
+geopandas
+shapely
+
+- Last lines:
+PyQt5
+folium
+pandas
+sqlalchemy
+geopandas
+shapely

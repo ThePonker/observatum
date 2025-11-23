@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+Generator ran - full structure created (if not skipped).
+
+- Last lines:
+Generator ran - full structure created (if not skipped).

@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""CSV import dialog with field mapping UI."""
+
+- Last lines:
+"""CSV import dialog with field mapping UI."""

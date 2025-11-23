@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Export dialog (CSV, geojson, shapefile, map images)."""
+
+- Last lines:
+"""Export dialog (CSV, geojson, shapefile, map images)."""

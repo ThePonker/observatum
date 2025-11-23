@@ -1,0 +1,18 @@
+﻿Text File Summary:
+- First lines:
+Read Me - relevant to the GUI depicted
+Green boxes = Descriptions/annotations explaining what elements are
+Orange boxes = Pop-up windows/dialogs
+Blue text = Tab labels showing screens within the main window
+CAPS in darker blue = Shows the currently active screen (e.g., INSECT COLLECTION)
+...
+(truncated in-file for brevity; replace with your full notes if desired)
+
+- Last lines:
+Read Me - relevant to the GUI depicted
+Green boxes = Descriptions/annotations explaining what elements are
+Orange boxes = Pop-up windows/dialogs
+Blue text = Tab labels showing screens within the main window
+CAPS in darker blue = Shows the currently active screen (e.g., INSECT COLLECTION)
+...
+(truncated in-file for brevity; replace with your full notes if desired)

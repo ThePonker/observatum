@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+
+Path                                                  Size (KB) LastModified     Extension 
+----                                                  --------- ------------     --------- 
+.gitignore                                                 0.52 2025-11-22 22:19 .gitignore
+config.py                                                  0.08 2025-11-22 18:13 .py       
+create_project_structure.done.txt                          0.06 2025-11-22 18:13 .txt      
+data\config.json                                           0.33 2025-11-22 20:32 .json     
+data\observations.db                                         28 2025-11-22 23:56 .db       
+data\uksi.db                                             250072 2025-11-22 23:24 .db       
+data\UKSI.mdb                                            799704 2025-11-14 20:15 .mdb      
+database\__init__.py                                       0.04 2025-11-22 18:13 .py       
+database\__pycache__\__init__.cpython-313.pyc              0.23 2025-11-22 19:50 .pyc      
+database\__pycache__\db_manager.cpython-313.pyc           13.09 2025-11-22 19:50 .pyc      
+database\__pycache__\uksi_handler.cpython-313.pyc         15.71 2025-11-22 23:55 .pyc      
+database\collection_db.py                                  0.05 2025-11-22 18:13 .py       
+database\db_manager.py                                    10.48 2025-11-22 19:50 .py       
+database\longhorn_db.py                                    0.04 2025-11-22 18:13 .py       
+database\models.py                                         0.06 2025-11-22 18:13 .py       
+database\observation_db.py                                 0.04 2025-11-22 18:13 .py       
+database\queries.py                                        0.04 2025-11-22 18:13 .py       
+database\uksi.db                                         250072 2025-11-22 23:24 .db       
+database\uksi_extractor_v5_fixed.py                       14.48 2025-11-22 23:23 .py       
+database\uksi_handler.py                                  14.63 2025-11-22 23:54 .py       
+dialogs\__init__.py                                        0.02 2025-11-22 18:13 .py       
+dialogs\add_record_dialog.py                               0.06 2025-11-22 18:13 .py       
+dialogs\base_dialog.py                                     0.05 2025-11-22 18:13 .py       
+dialogs\csv_parser.py                                      0.07 2025-11-22 18:13 .py       
+dialogs\export_dialog.py                                   0.06 2025-11-22 18:13 .py       
+dialogs\field_mapper.py                                    0.06 2025-11-22 18:13 .py       
+dialogs\field_validators.py                                0.08 2025-11-22 18:13 .py       
+
+- Last lines:
+tabs\insect_collection_tab.py                              0.06 2025-11-22 18:13 .py       
+tabs\longhorns_tab.py                                      0.07 2025-11-22 18:13 .py       
+tabs\main.py                                               7.46 2025-11-22 20:07 .py       
+tabs\settings_tab.py                                      14.07 2025-11-22 20:05 .py       
+tabs\stats_calculator.py                                   0.04 2025-11-22 18:13 .py       
+tabs\stats_charts.py                                       0.04 2025-11-22 18:13 .py       
+tabs\stats_tab.py                                          0.04 2025-11-22 18:13 .py       
+tests\test_database.py                                     0.05 2025-11-22 18:13 .py       
+tests\test_dialogs.py                                      0.04 2025-11-22 18:13 .py       
+tests\test_mapping.py                                      0.05 2025-11-22 18:13 .py       
+tests\test_validators.py                                   0.04 2025-11-22 18:13 .py       
+tree_output.txt                                            5.33 2025-11-22 22:17 .txt      
+uksi.db                                                       0 2025-11-22 23:11 .db       
+utils\__init__.py                                          0.02 2025-11-22 18:13 .py       
+utils\constants.py                                         0.05 2025-11-22 18:13 .py       
+utils\exporters.py                                         0.06 2025-11-22 18:13 .py       
+utils\grid_converter.py                                    0.03 2025-11-22 18:13 .py       
+utils\importers.py                                         0.05 2025-11-22 18:13 .py       
+utils\validators.py                                        0.05 2025-11-22 18:13 .py       
+widgets\__init__.py                                        0.02 2025-11-22 18:13 .py       
+widgets\__pycache__\__init__.cpython-313.pyc               0.22 2025-11-22 20:50 .pyc      
+widgets\__pycache__\add_record_widget.cpython-313.pyc     29.18 2025-11-22 23:55 .pyc      
+widgets\add_record_widget.py                              22.72 2025-11-22 23:55 .py       
+widgets\button_bar.py                                      8.01 2025-11-22 19:53 .py       
+widgets\data_grid.py                                       0.06 2025-11-22 18:13 .py       
+widgets\filter_panel.py                                    0.05 2025-11-22 18:13 .py       
+widgets\search_bar.py                                      0.06 2025-11-22 18:13 .py       
+widgets\status_bar.py                                      0.05 2025-11-22 18:13 .py       
+
+

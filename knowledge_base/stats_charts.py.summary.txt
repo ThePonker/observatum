@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Chart helpers for the statistics tab."""
+
+- Last lines:
+"""Chart helpers for the statistics tab."""

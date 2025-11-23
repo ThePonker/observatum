@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Widgets package."""
+
+- Last lines:
+"""Widgets package."""

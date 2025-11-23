@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Map widget wrapper (embed web map or native control)."""
+
+- Last lines:
+"""Map widget wrapper (embed web map or native control)."""

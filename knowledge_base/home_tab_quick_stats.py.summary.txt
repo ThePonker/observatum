@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Quick stats widget for Home tab."""
+
+- Last lines:
+"""Quick stats widget for Home tab."""

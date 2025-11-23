@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+iRecord Field Mapper
+Maps between iRecord CSV format and Observatum database format
+"""
+
+import csv
+import logging
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+
+class iRecordMapper:
+    """Maps fields between iRecord CSV and Observatum database"""
+    
+    # iRecord CSV column names (from actual export)
+    IRECORD_COLUMNS = {
+        'ID': 'ID',
+        'RecordKey': 'RecordKey',
+        'External key': 'External key',
+        'Taxon': 'Taxon',
+        'Common name': 'Common name',
+        'TaxonVersionKey': 'TaxonVersionKey',
+        'Site name': 'Site name',
+        'Original map ref': 'Original map ref',
+        'Output map ref': 'Output map ref',
+        'Latitude': 'Latitude',
+        'Longitude': 'Longitude',
+        'Date from': 'Date from',
+        'Date to': 'Date to',
+
+- Last lines:
+            irecord_records (list): Records from iRecord CSV
+            existing_records_by_key (dict): Existing records keyed by irecord_key
+            
+        Returns:
+            tuple: (new_records, duplicate_records, updated_records)
+        """
+        new_records = []
+        duplicate_records = []
+        updated_records = []
+        
+        for irecord_row in irecord_records:
+            record_key = irecord_row.get('RecordKey')
+            external_key = irecord_row.get('External key')
+            
+            # Check if exists by RecordKey
+            if record_key and record_key in existing_records_by_key:
+                existing = existing_records_by_key[record_key]
+                
+                # Check if verification status changed
+                new_status = irecord_row.get('Verification status 1', '')
+                old_status = existing.get('verification_status', '')
+                
+                if new_status != old_status:
+                    updated_records.append(irecord_row)
+                else:
+                    duplicate_records.append(irecord_row)
+            else:
+                new_records.append(irecord_row)
+        
+        return new_records, duplicate_records, updated_records

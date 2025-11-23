@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Field mapping helpers (map CSV columns to DB fields)."""
+
+- Last lines:
+"""Field mapping helpers (map CSV columns to DB fields)."""

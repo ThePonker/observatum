@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Distribution mapping helpers: heatmaps, choropleths, grid summaries."""
+
+- Last lines:
+"""Distribution mapping helpers: heatmaps, choropleths, grid summaries."""

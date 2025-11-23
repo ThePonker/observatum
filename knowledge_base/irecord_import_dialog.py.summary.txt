@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+iRecord Import Dialog
+Import records from iRecord CSV exports
+"""
+
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+import logging
+from pathlib import Path
+import uuid
+
+from utils.irecord_mapper import iRecordMapper
+from database.db_manager import get_db_manager
+
+logger = logging.getLogger(__name__)
+
+
+class iRecordImportDialog(tk.Toplevel):
+    """Dialog for importing records from iRecord CSV"""
+    
+    def __init__(self, parent):
+        super().__init__(parent)
+        
+        self.title("Import from iRecord")
+        self.geometry("600x500")
+        self.resizable(False, False)
+        
+        # Center on parent
+        self.transient(parent)
+        self.grab_set()
+
+- Last lines:
+                        irecord_row.get('Verification status 1', 'Not reviewed'),
+                        irecord_row.get('Verification status 2'),
+                        irecord_row.get('Verifier'),
+                        irecord_row.get('Verified on'),
+                        datetime.now().isoformat(),
+                        record_key
+                    ))
+                    updated += 1
+            
+            obs_conn.commit()
+            
+            # Show success
+            messagebox.showinfo(
+                "Import Complete",
+                f"Successfully imported {imported} new records"
+                f"{f' and updated {updated} existing records' if updated > 0 else ''}."
+            )
+            
+            logger.info(f"iRecord import complete: {imported} new, {updated} updated")
+            
+            # Close dialog
+            self.destroy()
+            
+        except Exception as e:
+            logger.error(f"Import error: {e}")
+            obs_conn.rollback()
+            messagebox.showerror(
+                "Import Error",
+                f"Error during import:\n{str(e)}"
+            )

@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+iRecord Sync Dialog
+Sync verification status from iRecord CSV exports
+"""
+
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+import logging
+from datetime import datetime
+
+from utils.irecord_mapper import iRecordMapper
+from database.db_manager import get_db_manager
+
+logger = logging.getLogger(__name__)
+
+
+class iRecordSyncDialog(tk.Toplevel):
+    """Dialog for syncing verification status with iRecord"""
+    
+    def __init__(self, parent):
+        super().__init__(parent)
+        
+        self.title("Sync with iRecord")
+        self.geometry("600x450")
+        self.resizable(False, False)
+        
+        # Center on parent
+        self.transient(parent)
+        self.grab_set()
+        
+
+- Last lines:
+                        values = list(update_fields.values()) + [existing['id']]
+                        
+                        cursor.execute(f"""
+                            UPDATE records
+                            SET {set_clause}
+                            WHERE id = ?
+                        """, values)
+                        
+                        updated += 1
+            
+            obs_conn.commit()
+            
+            # Show success
+            messagebox.showinfo(
+                "Sync Complete",
+                f"Successfully updated {updated} records."
+            )
+            
+            logger.info(f"iRecord sync complete: {updated} records updated")
+            
+            # Close dialog
+            self.destroy()
+            
+        except Exception as e:
+            logger.error(f"Sync error: {e}")
+            obs_conn.rollback()
+            messagebox.showerror(
+                "Sync Error",
+                f"Error during sync:\n{str(e)}"
+            )

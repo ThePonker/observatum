@@ -22,15 +22,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from tabs.base_tab import BaseTab
 
 # Import new components
-from widgets.record_table_widget import RecordTableWidget
-from database.record_query_builder import RecordQueryBuilder
+from widgets.tables.record_table_widget import RecordTableWidget
+from database.queries.record_query_builder import RecordQueryBuilder
 
 # Import optional components
 try:
-    from widgets.filter_panel import FilterPanel
-    from dialogs.edit_record_dialog import EditRecordDialog
+    from widgets.panels.filter_panel import FilterPanel
 except ImportError:
     FilterPanel = None
+
+try:
+    from dialogs.edit_record_dialog import EditRecordDialog
+except ImportError:
     EditRecordDialog = None
 
 logger = logging.getLogger(__name__)
@@ -336,11 +339,56 @@ class DataTab(BaseTab):
         Args:
             updated_data: Updated record data
         """
-        # Refresh table
-        self._load_records()
-        
-        # Show success message
-        messagebox.showinfo("Success", "Record updated successfully")
+        try:
+            # Get database connection
+            from database.db_manager import get_db_manager
+            db_manager = get_db_manager()
+            conn = db_manager.get_observations_connection()
+            cursor = conn.cursor()
+            
+            # Update the record
+            cursor.execute("""
+                UPDATE records SET
+                    species_name = ?,
+                    site_name = ?,
+                    grid_reference = ?,
+                    date = ?,
+                    recorder = ?,
+                    determiner = ?,
+                    certainty = ?,
+                    sex = ?,
+                    quantity = ?,
+                    sample_method = ?,
+                    observation_type = ?,
+                    sample_comment = ?
+                WHERE id = ?
+            """, (
+                updated_data['species_name'],
+                updated_data['site_name'],
+                updated_data['grid_reference'],
+                updated_data['date'],
+                updated_data['recorder'],
+                updated_data['determiner'],
+                updated_data['certainty'],
+                updated_data.get('sex'),
+                updated_data.get('quantity'),
+                updated_data.get('sample_method'),
+                updated_data.get('observation_type'),
+                updated_data.get('sample_comment'),
+                updated_data['id']
+            ))
+            
+            conn.commit()
+            
+            # Refresh table
+            self._load_records()
+            
+            # Show success message
+            messagebox.showinfo("Success", "Record updated successfully")
+            
+        except Exception as e:
+            logger.error(f"Error updating record: {e}", exc_info=True)
+            messagebox.showerror("Error", f"Failed to update record:\n\n{str(e)}")
     
     def _delete_selected(self):
         """Delete selected record(s)"""

@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Add Single Record dialog (form and validation wiring)."""
+
+- Last lines:
+"""Add Single Record dialog (form and validation wiring)."""

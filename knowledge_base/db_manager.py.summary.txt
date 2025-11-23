@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Database Manager for Observatum
+Handles SQLite database connections and initialization
+
+This module manages connections to three separate databases:
+1. observations.db - Main user observation records
+2. longhorns.db - National Longhorn Beetle Recording Scheme data
+3. insect_collection.db - Physical specimen collection records
+4. uksi.db - UK Species Inventory (reference database)
+"""
+
+import sqlite3
+from pathlib import Path
+from typing import Optional
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class DatabaseManager:
+    """Manages database connections and initialization for Observatum"""
+    
+    def __init__(self, db_dir: Optional[Path] = None):
+        """
+        Initialize the database manager
+        
+        Args:
+            db_dir: Directory where database files are stored.
+
+- Last lines:
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - close all connections"""
+        self.close_all()
+        
+
+# Global database manager instance
+_db_manager: Optional[DatabaseManager] = None
+
+
+def get_db_manager() -> DatabaseManager:
+    """
+    Get the global database manager instance
+    
+    Returns:
+        DatabaseManager singleton instance
+    """
+    global _db_manager
+    if _db_manager is None:
+        _db_manager = DatabaseManager()
+    return _db_manager
+
+
+def close_databases():
+    """Close all database connections (call on application exit)"""
+    global _db_manager
+    if _db_manager is not None:
+        _db_manager.close_all()
+        _db_manager = None

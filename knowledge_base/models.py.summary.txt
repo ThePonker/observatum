@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Data models for Observatum (ORM models or dataclasses)."""
+
+- Last lines:
+"""Data models for Observatum (ORM models or dataclasses)."""

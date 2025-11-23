@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Shared SQL queries and query templates."""
+
+- Last lines:
+"""Shared SQL queries and query templates."""

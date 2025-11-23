@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Longhorns tab - similar to Data tab but for Longhorn dataset."""
+
+- Last lines:
+"""Longhorns tab - similar to Data tab but for Longhorn dataset."""

@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Observation database operations (CRUD)."""
+
+- Last lines:
+"""Observation database operations (CRUD)."""

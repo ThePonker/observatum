@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Export utilities for CSV, geojson, shapefiles and images."""
+
+- Last lines:
+"""Export utilities for CSV, geojson, shapefiles and images."""

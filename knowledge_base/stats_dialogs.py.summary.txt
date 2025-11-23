@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Stats popups for different databases."""
+
+- Last lines:
+"""Stats popups for different databases."""

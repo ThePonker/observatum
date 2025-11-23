@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Application status bar for messages and progress."""
+
+- Last lines:
+"""Application status bar for messages and progress."""

@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Taxon viewer widget connected to UKSI reference DB."""
+
+- Last lines:
+"""Taxon viewer widget connected to UKSI reference DB."""

@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Help/documentation dialog content."""
+
+- Last lines:
+"""Help/documentation dialog content."""

@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Species autocomplete widget connecting to UKSI reference DB."""
+
+- Last lines:
+"""Species autocomplete widget connecting to UKSI reference DB."""

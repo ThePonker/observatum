@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Longhorns database operations (CRUD)."""
+
+- Last lines:
+"""Longhorns database operations (CRUD)."""

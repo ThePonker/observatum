@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Reusable data grid / table widget used across tabs."""
+
+- Last lines:
+"""Reusable data grid / table widget used across tabs."""

@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Edit Record Dialog for Observatum
+Dialog for editing existing observation records
+
+Allows users to modify any field and save changes
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+from datetime import datetime
+from typing import Dict, Optional
+import logging
+import sys
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from utils.validators import validate_all_record_fields, GridReferenceValidator
+
+logger = logging.getLogger(__name__)
+
+
+class EditRecordDialog(tk.Toplevel):
+    """Dialog for editing an existing record"""
+    
+    def __init__(self, parent, record_data: Dict, on_save: callable):
+        """
+        Initialize edit record dialog
+        
+
+- Last lines:
+            'observation_type': self.obs_type_var.get().strip() if self.obs_type_var.get().strip() else None,
+            'sample_comment': self.comment_text.get("1.0", tk.END).strip() if self.comment_text.get("1.0", tk.END).strip() else None
+        }
+        
+        # Validate
+        is_valid, errors = validate_all_record_fields(updated_data)
+        
+        if not is_valid:
+            messagebox.showerror(
+                "Validation Error",
+                "Please correct the following errors:\n\n• " + "\n• ".join(errors)
+            )
+            return
+        
+        # Confirm save
+        result = messagebox.askyesno(
+            "Save Changes",
+            "Are you sure you want to save these changes?"
+        )
+        
+        if result:
+            try:
+                self.on_save(updated_data)
+                self.destroy()
+            except Exception as e:
+                logger.error(f"Error saving record: {e}")
+                messagebox.showerror(
+                    "Save Error",
+                    f"Failed to save changes:\n\n{str(e)}"
+                )

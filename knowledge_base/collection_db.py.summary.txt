@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Insect collection database operations (CRUD)."""
+
+- Last lines:
+"""Insect collection database operations (CRUD)."""

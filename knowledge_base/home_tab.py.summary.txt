@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Home Tab for Observatum
+Displays overview and quick access to key information
+
+Contains three main components:
+- Add Single Record: Embedded data entry form
+- Quick Stats: 8 statistics boxes showing key metrics
+- Taxon Viewer: Hierarchical taxonomy browser
+- Recent Species List: Last 10 species entered
+"""
+
+import tkinter as tk
+from tkinter import ttk
+from pathlib import Path
+
+try:
+    from tabs.base_tab import BaseTab
+    from widgets.add_record_widget import AddRecordWidget
+    from tabs.stats_calculator import StatsCalculator
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from tabs.base_tab import BaseTab
+    from widgets.add_record_widget import AddRecordWidget
+    try:
+        from tabs.stats_calculator import StatsCalculator
+    except ImportError:
+        StatsCalculator = None
+
+
+
+- Last lines:
+        self.hierarchy_text.config(state=tk.DISABLED)
+    
+    def _update_stats(self):
+        """Update statistics from database"""
+        if not StatsCalculator:
+            return  # Stats calculator not available
+        
+        try:
+            from database.db_manager import get_db_manager
+            db_manager = get_db_manager()
+            obs_conn = db_manager.get_observations_connection()
+            
+            # Get all stats
+            calculator = StatsCalculator(obs_conn)
+            stats = calculator.get_all_stats()
+            
+            # Update each stat label
+            for key, value in stats.items():
+                if key in self.stat_labels:
+                    self.stat_labels[key].config(text=value)
+            
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error updating stats: {e}")
+        
+    def refresh(self):
+        """Refresh the home tab data"""
+        self._update_stats()
+        # TODO: Refresh species list
+        self.update_status("Home tab refreshed")

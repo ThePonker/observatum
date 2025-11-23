@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""OS grid reference conversions and validation utilities."""
+
+- Last lines:
+"""OS grid reference conversions and validation utilities."""

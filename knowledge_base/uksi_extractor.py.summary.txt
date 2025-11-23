@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+UKSI Database Extractor for Observatum FV - V5 FIXED
+==========================================
+Extracts species data from UKSI.mdb Access database into uksi.db SQLite database.
+
+This version uses the OFFICIAL Nameserver approach from the NHM guide:
+- Links common names to ALL TVKs via RECOMMENDED_TAXON_VERSION_KEY
+- Uses self-join pattern from official documentation
+- Correctly handles multiple TVKs per species
+
+Critical Discovery from Official Guide:
+"The Nameserver can be joined to itself and so you can report on related names,
+even if you do not know that your TVK is the recommended scientific name"
+
+Author: Observatum Development Team
+Date: 22 November 2025
+Version: 5 (Fixed based on NHM Nameserver Guide)
+"""
+
+import pyodbc
+import sqlite3
+import os
+from pathlib import Path
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def create_uksi_database(db_path: Path):
+
+- Last lines:
+        print("\nPossible causes:")
+        print("  - Microsoft Access Driver not installed")
+        print("  - UKSI.mdb file is corrupted")
+        print("  - 32/64-bit mismatch")
+        return False
+        
+    except Exception as e:
+        print(f"\n❌ ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+if __name__ == '__main__':
+    print("\n")
+    success = main()
+    
+    if success:
+        print("\n✅ EXTRACTION COMPLETED SUCCESSFULLY!")
+        print("\nNEXT STEPS:")
+        print("1. Copy uksi.db to data/ folder:")
+        print("   Move-Item database\\uksi.db data\\uksi.db")
+        print("2. Copy to database/ folder too (for compatibility):")
+        print("   Copy-Item data\\uksi.db database\\uksi.db")
+        print("3. Test species search - common names should now appear!")
+        print("4. Try searching 'Blackbird', 'Turdus merula', or 'NBNSYS0000000082'")
+        print("\n")
+    else:
+        print("\n❌ Extraction failed - please resolve errors above")
+        print("\n")

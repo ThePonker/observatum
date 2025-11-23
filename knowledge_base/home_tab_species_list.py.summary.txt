@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Recent species list widget."""
+
+- Last lines:
+"""Recent species list widget."""

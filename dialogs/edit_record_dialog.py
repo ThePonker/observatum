@@ -16,7 +16,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.validators import validate_all_record_fields, GridReferenceValidator
+from utils.validation.validators import validate_all_record_fields, GridReferenceValidator
 
 logger = logging.getLogger(__name__)
 

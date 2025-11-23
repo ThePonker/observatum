@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Button Bar Widget for Observatum
+Reusable button bar component for consistent UI across tabs
+
+Provides standardized button bars with common actions like Import, Export,
+Add Record, and Stats. Can be customized per tab while maintaining consistency.
+"""
+
+import tkinter as tk
+from tkinter import ttk
+from typing import Optional, Callable, List, Dict
+
+
+class ButtonBar(ttk.Frame):
+    """
+    Reusable button bar widget
+    
+    Provides a horizontal bar of buttons with consistent styling and spacing.
+    Commonly used in Data, Longhorns, and Insect Collection tabs.
+    """
+    
+    def __init__(self, parent, buttons: Optional[List[Dict]] = None, **kwargs):
+        """
+        Initialize the button bar
+        
+        Args:
+            parent: Parent widget
+            buttons: List of button specifications, each dict containing:
+                - 'text': Button text
+                - 'command': Callback function
+
+- Last lines:
+        ("Help", lambda: print("Help clicked!"))
+    ]
+    
+    simple_button_bar = SimpleButtonBar(root, button_configs=simple_buttons)
+    simple_button_bar.pack(padx=20, pady=10, anchor=tk.W)
+    
+    # Test button control
+    label3 = ttk.Label(root, text="Button Control Example:", font=("Arial", 12, "bold"))
+    label3.pack(pady=(30, 10))
+    
+    control_bar = DataTabButtonBar(root, tab_name="Test")
+    control_bar.pack(padx=20, pady=10, anchor=tk.W)
+    
+    # Control buttons
+    control_frame = ttk.Frame(root)
+    control_frame.pack(padx=20, pady=10)
+    
+    ttk.Button(
+        control_frame,
+        text="Disable Import",
+        command=lambda: control_bar.disable_button("Import Data")
+    ).pack(side=tk.LEFT, padx=5)
+    
+    ttk.Button(
+        control_frame,
+        text="Enable Import",
+        command=lambda: control_bar.enable_button("Import Data")
+    ).pack(side=tk.LEFT, padx=5)
+    
+    root.mainloop()

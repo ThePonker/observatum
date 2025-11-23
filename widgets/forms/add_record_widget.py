@@ -20,16 +20,16 @@ import json
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import UKSI handler
-from database.uksi_handler import UKSIHandler
+from database.handlers.uksi_handler import UKSIHandler
 
 # Import components
-from widgets.species_search_widget import SpeciesSearchWidget
-from widgets.record_form_builder import RecordFormBuilder
-from utils.record_submission_handler import RecordSubmissionHandler
+from widgets.forms.species_search_widget import SpeciesSearchWidget
+from widgets.forms.record_form_builder import RecordFormBuilder
+from utils.submission.record_submission_handler import RecordSubmissionHandler
 
 # Import validators
 try:
-    from utils.validators import GridReferenceValidator
+    from utils.validation.validators import GridReferenceValidator
 except ImportError:
     GridReferenceValidator = None
 
@@ -60,7 +60,7 @@ class AddRecordWidget(ttk.LabelFrame):
         self.settings = self._load_settings()
         
         # Initialize UKSI handler
-        uksi_db_path = Path(__file__).parent.parent / 'database' / 'uksi.db'
+        uksi_db_path = Path(__file__).parent.parent.parent / 'database' / 'uksi.db'
         try:
             self.uksi = UKSIHandler(uksi_db_path)
             logger.info("UKSI handler initialized successfully")

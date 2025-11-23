@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Base dialog class for modal/pop-up dialogs."""
+
+- Last lines:
+"""Base dialog class for modal/pop-up dialogs."""

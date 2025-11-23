@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Add Record Widget for Observatum
+Embedded form for adding single observation records
+
+This widget replaces the placeholder in the Home tab and provides
+a complete data entry form for observations with UKSI integration.
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+from datetime import datetime
+from pathlib import Path
+import sys
+import logging
+import uuid
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import UKSI handler
+from database.uksi_handler import UKSIHandler
+
+# Import validators
+try:
+    from utils.validators import GridReferenceValidator, validate_all_record_fields
+except ImportError:
+    # Fallback if validators not yet in utils
+    GridReferenceValidator = None
+    validate_all_record_fields = None
+
+
+- Last lines:
+            logger.info(f"Saved record: {record_data['species_name']} (TVK: {record_data['taxon_id']})")
+            
+            # Clear form after successful submission
+            self._clear_form()
+            
+        except Exception as e:
+            logger.error(f"Error saving record: {e}")
+            messagebox.showerror(
+                "Database Error",
+                f"Failed to save record:\n\n{str(e)}"
+            )
+        
+    def _clear_form(self):
+        """Clear all form fields (except defaults from settings)"""
+        self.species_var.set("")
+        self.selected_species = None  # Reset selected species
+        self.site_var.set("")
+        self.gridref_var.set("")
+        self.date_var.set(datetime.now().strftime("%Y-%m-%d"))
+        
+        # Keep defaults from settings
+        self.recorder_var.set(self.settings.get('default_recorder', ''))
+        self.determiner_var.set(self.settings.get('default_determiner', ''))
+        self.certainty_var.set(self.settings.get('default_certainty', 'Certain'))
+        
+        self.sex_var.set("")
+        self.quantity_var.set("")
+        self.sample_method_var.set(self.settings.get('default_sample_method', ''))
+        self.obs_type_var.set(self.settings.get('default_observation_type', ''))
+        self.comment_text.delete("1.0", tk.END)

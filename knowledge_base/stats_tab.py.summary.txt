@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Statistics tab and dashboard widgets."""
+
+- Last lines:
+"""Statistics tab and dashboard widgets."""

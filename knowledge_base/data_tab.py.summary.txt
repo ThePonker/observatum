@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Data Tab for Observatum
+View, filter, edit, and delete observation records
+
+Features:
+- Sortable table view of all records
+- Advanced filtering (date, species, site, recorder)
+- Edit records (double-click)
+- Delete records (selected)
+- Export to CSV
+- Bulk operations
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+from pathlib import Path
+import sys
+import logging
+import csv
+from datetime import datetime
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from tabs.base_tab import BaseTab
+try:
+    from widgets.filter_panel import FilterPanel
+    from dialogs.edit_record_dialog import EditRecordDialog
+except ImportError:
+    FilterPanel = None
+
+- Last lines:
+        """Show right-click context menu"""
+        # Select item under cursor
+        item = self.tree.identify_row(event.y)
+        if item:
+            self.tree.selection_set(item)
+            
+            # Create context menu
+            menu = tk.Menu(self, tearoff=0)
+            menu.add_command(label="Edit Record", command=self._edit_selected)
+            menu.add_command(label="Delete Record", command=self._delete_selected)
+            menu.add_separator()
+            menu.add_command(label="Copy Grid Reference", command=lambda: self._copy_field('Grid Ref'))
+            menu.add_command(label="Copy Species Name", command=lambda: self._copy_field('Species'))
+            
+            menu.post(event.x_root, event.y_root)
+    
+    def _copy_field(self, column: str):
+        """Copy field value to clipboard"""
+        selection = self.tree.selection()
+        if selection:
+            value = self.tree.set(selection[0], column)
+            self.clipboard_clear()
+            self.clipboard_append(value)
+            self.update_status(f"Copied {column}: {value}")
+    
+    def refresh(self):
+        """Refresh the data tab"""
+        filters = self.filter_panel.get_filters() if self.filter_panel else None
+        self._load_records(filters)
+        self.update_status("Data tab refreshed")

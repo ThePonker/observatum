@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Settings Tab for Observatum
+Configuration and user preferences
+
+Allows users to configure:
+- Default values for data entry fields (Recorder, Determiner, Certainty)
+- Application preferences
+- Database settings
+- Display options
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+import json
+from pathlib import Path
+from typing import Dict, Any
+
+try:
+    from tabs.base_tab import BaseTab
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from tabs.base_tab import BaseTab
+
+
+class SettingsTab(BaseTab):
+    """Settings and configuration tab"""
+    
+    def __init__(self, parent, app_instance, **kwargs):
+        """Initialize the settings tab"""
+
+- Last lines:
+            self.font_size_var.set(defaults['font_size'])
+            self.show_grid_var.set(defaults['show_grid_lines'])
+            self.confirm_delete_var.set(defaults['confirm_deletions'])
+            self.auto_save_var.set(defaults['auto_save'])
+            self.backup_var.set(defaults['backup_frequency'])
+            
+            self.update_status("Settings reset to defaults")
+            self.mark_modified()
+            
+    def create_backup(self):
+        """Create a manual database backup"""
+        # TODO: Implement actual backup functionality
+        self.update_status("Backup functionality to be implemented")
+        messagebox.showinfo(
+            "Backup",
+            "Database backup functionality will be implemented in a future version."
+        )
+        
+    def get_setting(self, key: str, default: Any = None) -> Any:
+        """
+        Get a specific setting value
+        
+        Args:
+            key: Setting key
+            default: Default value if key doesn't exist
+            
+        Returns:
+            Setting value or default
+        """
+        return self.settings.get(key, default)

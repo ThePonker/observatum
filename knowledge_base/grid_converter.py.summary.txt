@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""OS grid conversion helpers."""
+
+- Last lines:
+"""OS grid conversion helpers."""

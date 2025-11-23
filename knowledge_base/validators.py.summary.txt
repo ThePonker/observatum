@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Validators for Observatum
+Validation functions for data entry fields
+
+Includes:
+- UK Grid Reference validation
+- Date validation
+- Numeric validation
+"""
+
+import re
+from datetime import datetime
+from typing import Tuple, Optional
+
+
+class GridReferenceValidator:
+    """Validator for UK National Grid References"""
+    
+    # UK National Grid square letters (100km squares)
+    GRID_LETTERS = [
+        ['SV', 'SW', 'SX', 'SY', 'SZ', 'TV', 'TW'],
+        ['SQ', 'SR', 'SS', 'ST', 'SU', 'TQ', 'TR'],
+        ['SL', 'SM', 'SN', 'SO', 'SP', 'TL', 'TM'],
+        ['SF', 'SG', 'SH', 'SJ', 'SK', 'TF', 'TG'],
+        ['SA', 'SB', 'SC', 'SD', 'SE', 'TA', 'TB'],
+        ['NV', 'NW', 'NX', 'NY', 'NZ', 'OV', 'OW'],
+        ['NQ', 'NR', 'NS', 'NT', 'NU', 'OQ', 'OR'],
+        ['NL', 'NM', 'NN', 'NO', 'NP', 'OL', 'OM'],
+        ['NF', 'NG', 'NH', 'NJ', 'NK', 'OF', 'OG'],
+        ['NA', 'NB', 'NC', 'ND', 'NE', 'OA', 'OB'],
+
+- Last lines:
+        'date': 'Date',
+        'recorder': 'Recorder',
+        'determiner': 'Determiner',
+        'certainty': 'Certainty'
+    }
+    
+    for field, label in required.items():
+        is_valid, error = validate_required_field(record_data.get(field, ''), label)
+        if not is_valid:
+            errors.append(error)
+    
+    # Grid reference validation
+    if record_data.get('grid_reference'):
+        is_valid, error = GridReferenceValidator.validate(record_data['grid_reference'])
+        if not is_valid:
+            errors.append(f"Grid Reference: {error}")
+    
+    # Date validation
+    if record_data.get('date'):
+        is_valid, error = DateValidator.validate(record_data['date'])
+        if not is_valid:
+            errors.append(f"Date: {error}")
+    
+    # Quantity validation (optional field)
+    if record_data.get('quantity'):
+        is_valid, error = QuantityValidator.validate(str(record_data['quantity']))
+        if not is_valid:
+            errors.append(f"Quantity: {error}")
+    
+    return len(errors) == 0, errors

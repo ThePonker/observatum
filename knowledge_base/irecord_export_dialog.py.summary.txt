@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+iRecord Export Dialog
+Export records in iRecord-compatible CSV format
+"""
+
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+import logging
+from pathlib import Path
+from datetime import datetime
+
+from utils.irecord_mapper import iRecordMapper
+from database.db_manager import get_db_manager
+
+logger = logging.getLogger(__name__)
+
+
+class iRecordExportDialog(tk.Toplevel):
+    """Dialog for exporting records to iRecord format"""
+    
+    def __init__(self, parent):
+        super().__init__(parent)
+        
+        self.title("Export for iRecord")
+        self.geometry("550x450")
+        self.resizable(False, False)
+        
+        # Center on parent
+        self.transient(parent)
+        self.grab_set()
+
+- Last lines:
+                
+                record_ids = [record['id'] for record in records]
+                placeholders = ','.join('?' * len(record_ids))
+                
+                cursor.execute(f"""
+                    UPDATE records 
+                    SET submitted_to_irecord = 1,
+                        submitted_date = ?
+                    WHERE id IN ({placeholders})
+                """, [datetime.now().isoformat()] + record_ids)
+                
+                obs_conn.commit()
+            
+            # Show success
+            messagebox.showinfo(
+                "Export Complete",
+                f"Successfully exported {count} records to:\n{filepath}"
+            )
+            
+            logger.info(f"iRecord export complete: {count} records to {filepath}")
+            
+            # Close dialog
+            self.destroy()
+            
+        except Exception as e:
+            logger.error(f"Export error: {e}")
+            messagebox.showerror(
+                "Export Error",
+                f"Error during export:\n{str(e)}"
+            )

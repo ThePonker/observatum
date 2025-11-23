@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""CSV parsing utilities (encoding detection, delimiter handling)."""
+
+- Last lines:
+"""CSV parsing utilities (encoding detection, delimiter handling)."""

@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Bridge for embedding Leaflet/folium-based HTML maps in the GUI."""
+
+- Last lines:
+"""Bridge for embedding Leaflet/folium-based HTML maps in the GUI."""

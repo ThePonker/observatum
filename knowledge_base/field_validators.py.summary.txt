@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Field validators for dialog inputs (dates, grid refs, required fields)."""
+
+- Last lines:
+"""Field validators for dialog inputs (dates, grid refs, required fields)."""

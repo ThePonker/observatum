@@ -1,0 +1,10 @@
+﻿Text File Summary:
+- First lines:
+"""Application configuration constants and defaults."""
+
+DEFAULT_DB_PATH = None
+
+- Last lines:
+"""Application configuration constants and defaults."""
+
+DEFAULT_DB_PATH = None

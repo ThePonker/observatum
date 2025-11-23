@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Manage base layers and overlay layers for the map."""
+
+- Last lines:
+"""Manage base layers and overlay layers for the map."""

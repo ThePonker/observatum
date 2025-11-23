@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Base Tab Class for Observatum
+Provides common functionality for all tabs
+
+All tab implementations should inherit from this base class to ensure
+consistent behavior and interface across the application.
+"""
+
+import tkinter as tk
+from tkinter import ttk
+from typing import Optional
+from abc import ABC, abstractmethod
+
+
+class BaseTab(ttk.Frame, ABC):
+    """
+    Abstract base class for all Observatum tabs
+    
+    Provides common functionality:
+    - Standard frame structure
+    - Database access
+    - Status bar updates
+    - Common UI patterns
+    """
+    
+    def __init__(self, parent, app_instance, **kwargs):
+        """
+        Initialize the base tab
+        
+        Args:
+
+- Last lines:
+        """
+        return "Data"
+        
+    def on_import_data(self):
+        """Handle Import Data button click"""
+        self.update_status("Import Data dialog (to be implemented)")
+        
+    def on_export_data(self):
+        """Handle Export Data button click"""
+        self.update_status("Export Data dialog (to be implemented)")
+        
+    def on_add_record(self):
+        """Handle Add Single Record button click"""
+        self.update_status("Add Record dialog (to be implemented)")
+        
+    def on_show_stats(self):
+        """Handle Stats button click"""
+        self.update_status("Stats dialog (to be implemented)")
+        
+    def on_show_filters(self):
+        """Handle Filters button click"""
+        self.update_status("Filters dialog (to be implemented)")
+        
+    def on_search_changed(self, *args):
+        """Handle search text changes"""
+        search_text = self.search_var.get()
+        if search_text:
+            self.update_status(f"Searching for: {search_text}")
+        else:
+            self.update_status("Ready")

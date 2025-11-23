@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Insect Collection tab for physical specimen records."""
+
+- Last lines:
+"""Insect Collection tab for physical specimen records."""

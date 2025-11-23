@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Export maps as images/geojson/shapefiles."""
+
+- Last lines:
+"""Export maps as images/geojson/shapefiles."""

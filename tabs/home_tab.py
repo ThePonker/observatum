@@ -15,13 +15,13 @@ from pathlib import Path
 
 try:
     from tabs.base_tab import BaseTab
-    from widgets.add_record_widget import AddRecordWidget
+    from widgets.forms.add_record_widget import AddRecordWidget
     from tabs.stats_calculator import StatsCalculator
 except ImportError:
     import sys
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from tabs.base_tab import BaseTab
-    from widgets.add_record_widget import AddRecordWidget
+    from widgets.forms.add_record_widget import AddRecordWidget
     try:
         from tabs.stats_calculator import StatsCalculator
     except ImportError:

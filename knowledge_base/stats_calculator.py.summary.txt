@@ -1,0 +1,64 @@
+﻿Text File Summary:
+- First lines:
+"""
+Statistics Calculator for Observatum
+Calculates statistics from observations database
+
+Used by Home tab Quick Stats boxes
+"""
+
+import sqlite3
+from datetime import datetime, timedelta
+from typing import Dict, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class StatsCalculator:
+    """Calculate statistics from observations database"""
+    
+    def __init__(self, db_connection: sqlite3.Connection):
+        """
+        Initialize stats calculator
+        
+        Args:
+            db_connection: SQLite connection to observations database
+        """
+        self.conn = db_connection
+        self.conn.row_factory = sqlite3.Row
+    
+    def get_all_stats(self) -> Dict[str, str]:
+        """
+
+- Last lines:
+        except Exception as e:
+            logger.error(f"Error getting total species: {e}")
+            return "0"
+    
+    def get_unique_sites(self) -> str:
+        """Get number of unique sites"""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                SELECT COUNT(DISTINCT site_name) FROM records
+                WHERE site_name IS NOT NULL AND site_name != ''
+            """)
+            count = cursor.fetchone()[0]
+            return f"{count:,}"
+        except Exception as e:
+            logger.error(f"Error getting unique sites: {e}")
+            return "0"
+    
+    def _get_default_stats(self) -> Dict[str, str]:
+        """Get default stats when database is unavailable"""
+        return {
+            'total_records': "0",
+            'this_year': "0",
+            'last_7_days': "0",
+            'last_recorded': "N/A",
+            'total_species': "0",
+            'this_month': "0",
+            'last_30_days': "0",
+            'unique_sites': "0"
+        }

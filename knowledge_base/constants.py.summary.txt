@@ -1,0 +1,6 @@
+﻿Text File Summary:
+- First lines:
+"""Shared constants (field names, defaults)."""
+
+- Last lines:
+"""Shared constants (field names, defaults)."""

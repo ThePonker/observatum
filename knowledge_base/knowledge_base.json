@@ -1,0 +1,638 @@
+﻿[
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\.gitignore",
+        "size_bytes":  537,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\.gitignore.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\add_record_widget.py",
+        "size_bytes":  25368,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\add_record_widget.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\config.py",
+        "size_bytes":  80,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\config.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\create_project_structure.done.txt",
+        "size_bytes":  57,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\create_project_structure.done.txt.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\file_sizes.txt",
+        "size_bytes":  20826,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\file_sizes.txt.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\file_structure.txt",
+        "size_bytes":  8472,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\file_structure.txt.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\gui_analysis_notes.txt",
+        "size_bytes":  366,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\gui_analysis_notes.txt.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\main.py",
+        "size_bytes":  13703,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\main.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\README.md",
+        "size_bytes":  130,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\README.md.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\requirements.txt",
+        "size_bytes":  49,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\requirements.txt.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tree_output.txt",
+        "size_bytes":  5454,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\tree_output.txt.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\data\\config.json",
+        "size_bytes":  342,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\config.json.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\data\\observations.db",
+        "size_bytes":  28672,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\observations.db.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\data\\uksi.db",
+        "size_bytes":  256073728,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\uksi.db.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\data\\UKSI.mdb",
+        "size_bytes":  818896896,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\UKSI.mdb.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\collection_db.py",
+        "size_bytes":  52,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\collection_db.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\db_manager.py",
+        "size_bytes":  10729,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\db_manager.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\longhorn_db.py",
+        "size_bytes":  44,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\longhorn_db.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\migrations.py",
+        "size_bytes":  9148,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\migrations.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\models.py",
+        "size_bytes":  62,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\models.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\observation_db.py",
+        "size_bytes":  46,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\observation_db.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\queries.py",
+        "size_bytes":  46,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\queries.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\uksi.db",
+        "size_bytes":  256073728,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\uksi.db.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\uksi_extractor.py",
+        "size_bytes":  14828,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\uksi_extractor.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\uksi_handler.py",
+        "size_bytes":  14978,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\uksi_handler.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\__init__.py",
+        "size_bytes":  39,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\__init__.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\__pycache__\\db_manager.cpython-313.pyc",
+        "size_bytes":  13405,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\db_manager.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\__pycache__\\migrations.cpython-313.pyc",
+        "size_bytes":  9783,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\migrations.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\__pycache__\\uksi_handler.cpython-313.pyc",
+        "size_bytes":  16088,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\uksi_handler.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\database\\__pycache__\\__init__.cpython-313.pyc",
+        "size_bytes":  239,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\__init__.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\add_record_dialog.py",
+        "size_bytes":  61,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\add_record_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\base_dialog.py",
+        "size_bytes":  50,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\base_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\csv_parser.py",
+        "size_bytes":  70,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\csv_parser.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\edit_record_dialog.py",
+        "size_bytes":  11044,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\edit_record_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\export_dialog.py",
+        "size_bytes":  59,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\export_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\field_mapper.py",
+        "size_bytes":  60,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\field_mapper.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\field_validators.py",
+        "size_bytes":  78,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\field_validators.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\help_dialog.py",
+        "size_bytes":  41,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\help_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\import_dialog.py",
+        "size_bytes":  47,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\import_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\irecord_export_dialog.py",
+        "size_bytes":  11993,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\irecord_export_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\irecord_import_dialog.py",
+        "size_bytes":  12596,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\irecord_import_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\irecord_sync_dialog.py",
+        "size_bytes":  13905,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\irecord_sync_dialog.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\species_autocomplete.py",
+        "size_bytes":  67,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\species_autocomplete.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\stats_dialogs.py",
+        "size_bytes":  44,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\stats_dialogs.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\__init__.py",
+        "size_bytes":  23,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\__init__.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\__pycache__\\edit_record_dialog.cpython-313.pyc",
+        "size_bytes":  16106,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\edit_record_dialog.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\__pycache__\\irecord_export_dialog.cpython-313.pyc",
+        "size_bytes":  15457,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\irecord_export_dialog.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\__pycache__\\irecord_import_dialog.cpython-313.pyc",
+        "size_bytes":  15355,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\irecord_import_dialog.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\__pycache__\\irecord_sync_dialog.cpython-313.pyc",
+        "size_bytes":  15075,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\irecord_sync_dialog.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\dialogs\\__pycache__\\__init__.cpython-313.pyc",
+        "size_bytes":  222,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\__init__.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\distribution_maps.py",
+        "size_bytes":  75,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\distribution_maps.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\export_maps.py",
+        "size_bytes":  48,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\export_maps.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\grid_reference.py",
+        "size_bytes":  62,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\grid_reference.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\leaflet_bridge.py",
+        "size_bytes":  70,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\leaflet_bridge.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\MAPPING_POSSIBILITIES_WITH_AI.md",
+        "size_bytes":  270,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\MAPPING_POSSIBILITIES_WITH_AI.md.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\mapping_tab.py",
+        "size_bytes":  77,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\mapping_tab.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\map_layers.py",
+        "size_bytes":  57,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\map_layers.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\map_widget.py",
+        "size_bytes":  60,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\map_widget.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\__init__.py",
+        "size_bytes":  23,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\__init__.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\mapping\\templates\\leaflet_map.html",
+        "size_bytes":  591,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\leaflet_map.html.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\resources\\help\\.gitkeep",
+        "size_bytes":  0,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\.gitkeep.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\resources\\icons\\.gitkeep",
+        "size_bytes":  0,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\.gitkeep.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\resources\\templates\\.gitkeep",
+        "size_bytes":  0,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\.gitkeep.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\base_tab.py",
+        "size_bytes":  8825,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\base_tab.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\data_tab.py",
+        "size_bytes":  20107,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\data_tab.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\home_tab.py",
+        "size_bytes":  13373,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\home_tab.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\home_tab_quick_stats.py",
+        "size_bytes":  39,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\home_tab_quick_stats.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\home_tab_species_list.py",
+        "size_bytes":  34,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\home_tab_species_list.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\home_tab_taxon_viewer.py",
+        "size_bytes":  58,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\home_tab_taxon_viewer.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\insect_collection_tab.py",
+        "size_bytes":  59,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\insect_collection_tab.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\longhorns_tab.py",
+        "size_bytes":  68,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\longhorns_tab.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\settings_tab.py",
+        "size_bytes":  14406,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\settings_tab.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\stats_calculator.py",
+        "size_bytes":  6922,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\stats_calculator.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\stats_charts.py",
+        "size_bytes":  44,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\stats_charts.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\stats_tab.py",
+        "size_bytes":  44,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\stats_tab.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\__init__.py",
+        "size_bytes":  20,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\__init__.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\__pycache__\\base_tab.cpython-313.pyc",
+        "size_bytes":  11406,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\base_tab.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\__pycache__\\data_tab.cpython-313.pyc",
+        "size_bytes":  23852,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\data_tab.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\__pycache__\\home_tab.cpython-313.pyc",
+        "size_bytes":  14988,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\home_tab.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\__pycache__\\settings_tab.cpython-313.pyc",
+        "size_bytes":  18320,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\settings_tab.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\__pycache__\\stats_calculator.cpython-313.pyc",
+        "size_bytes":  9552,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\stats_calculator.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tabs\\__pycache__\\__init__.cpython-313.pyc",
+        "size_bytes":  216,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\__init__.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tests\\test_database.py",
+        "size_bytes":  50,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\test_database.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tests\\test_dialogs.py",
+        "size_bytes":  42,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\test_dialogs.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tests\\test_mapping.py",
+        "size_bytes":  49,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\test_mapping.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\tests\\test_validators.py",
+        "size_bytes":  45,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\test_validators.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\constants.py",
+        "size_bytes":  48,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\constants.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\exporters.py",
+        "size_bytes":  64,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\exporters.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\grid_converter.py",
+        "size_bytes":  34,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\grid_converter.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\importers.py",
+        "size_bytes":  47,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\importers.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\irecord_mapper.py",
+        "size_bytes":  10649,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\irecord_mapper.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\validators.py",
+        "size_bytes":  8097,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\validators.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\__init__.py",
+        "size_bytes":  21,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\__init__.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\__pycache__\\irecord_mapper.cpython-313.pyc",
+        "size_bytes":  10204,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\irecord_mapper.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\__pycache__\\validators.cpython-313.pyc",
+        "size_bytes":  8403,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\validators.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\utils\\__pycache__\\__init__.cpython-313.pyc",
+        "size_bytes":  218,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\__init__.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\add_record_widget.py",
+        "size_bytes":  25368,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\add_record_widget.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\button_bar.py",
+        "size_bytes":  8200,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\button_bar.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\data_grid.py",
+        "size_bytes":  58,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\data_grid.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\filter_panel.py",
+        "size_bytes":  8604,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\filter_panel.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\search_bar.py",
+        "size_bytes":  66,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\search_bar.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\status_bar.py",
+        "size_bytes":  56,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\status_bar.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\__init__.py",
+        "size_bytes":  23,
+        "is_binary":  false,
+        "summary_file":  "knowledge_base\\__init__.py.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\__pycache__\\add_record_widget.cpython-313.pyc",
+        "size_bytes":  32352,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\add_record_widget.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\__pycache__\\filter_panel.cpython-313.pyc",
+        "size_bytes":  13988,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\filter_panel.cpython-313.pyc.summary.txt"
+    },
+    {
+        "file":  "C:\\Users\\wjhee\\Documents\\Digital Luggage\\Projects\\Observatum\\Observatum FV\\widgets\\__pycache__\\__init__.cpython-313.pyc",
+        "size_bytes":  222,
+        "is_binary":  true,
+        "summary_file":  "knowledge_base\\__init__.cpython-313.pyc.summary.txt"
+    }
+]
