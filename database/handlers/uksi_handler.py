@@ -18,8 +18,13 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Optional
 
-from database.handlers.uksi_search import UKSISearch
-from database.handlers.uksi_ranker import UKSIRanker
+# Import helper classes - adjust path based on whether we're in root or subdirectory
+try:
+    from uksi_search import UKSISearch
+    from uksi_ranker import UKSIRanker
+except ImportError:
+    from database.handlers.uksi_search import UKSISearch
+    from database.handlers.uksi_ranker import UKSIRanker
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +123,9 @@ class UKSIHandler:
     
     def get_species_by_tvk(self, tvk: str) -> Optional[Dict]:
         """
-        Get detailed species information by TVK.
+        Get detailed species information by TVK, including full taxonomy.
+        
+        Builds taxonomy by traversing the hierarchy table's parent relationships.
         
         Args:
             tvk: Taxon Version Key
@@ -128,18 +135,12 @@ class UKSIHandler:
         """
         cursor = self.conn.cursor()
         
+        # Get basic species info
         query = """
         SELECT 
             t.tvk,
             t.scientific_name,
             t.rank,
-            t.parent_tvk,
-            t.kingdom,
-            t.phylum,
-            t.class,
-            t."order",
-            t.family,
-            t.genus,
             GROUP_CONCAT(cn.common_name, ', ') as common_names
         FROM taxa t
         LEFT JOIN common_names cn ON t.tvk = cn.tvk
@@ -153,19 +154,91 @@ class UKSIHandler:
         if not row:
             return None
         
+        # Build taxonomy by traversing parent hierarchy
+        taxonomy = self._build_taxonomy(tvk)
+        
         return {
             'tvk': row['tvk'],
             'scientific_name': row['scientific_name'],
             'common_names': row['common_names'],
             'rank': row['rank'],
-            'parent_tvk': row['parent_tvk'],
-            'kingdom': row['kingdom'],
-            'phylum': row['phylum'],
-            'class': row['class'],
-            'order': row['order'],
-            'family': row['family'],
-            'genus': row['genus']
+            'parent_tvk': taxonomy.get('parent_tvk'),
+            'kingdom': taxonomy.get('kingdom'),
+            'phylum': taxonomy.get('phylum'),
+            'class': taxonomy.get('class'),
+            'order': taxonomy.get('order'),
+            'family': taxonomy.get('family'),
+            'genus': taxonomy.get('genus')
         }
+    
+    def _build_taxonomy(self, tvk: str) -> Dict[str, str]:
+        """
+        Build taxonomy hierarchy by traversing parent relationships.
+        
+        Args:
+            tvk: Starting Taxon Version Key
+            
+        Returns:
+            Dictionary with taxonomy levels populated
+        """
+        cursor = self.conn.cursor()
+        taxonomy = {}
+        
+        # Debug: Track what we find
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        # Traverse up the hierarchy collecting taxonomy at each level
+        current_tvk = tvk
+        visited = set()  # Prevent infinite loops
+        max_depth = 20  # Safety limit
+        depth = 0
+        found_ranks = []
+        
+        while current_tvk and depth < max_depth:
+            if current_tvk in visited:
+                logger.debug(f"Circular reference detected at depth {depth}")
+                break  # Circular reference detected
+            visited.add(current_tvk)
+            
+            # Get this taxon's info and parent
+            query = """
+            SELECT t.scientific_name, t.rank, h.parent_tvk
+            FROM taxa t
+            LEFT JOIN hierarchy h ON t.tvk = h.tvk
+            WHERE t.tvk = ?
+            """
+            cursor.execute(query, (current_tvk,))
+            row = cursor.fetchone()
+            
+            if not row:
+                logger.debug(f"No row found for TVK: {current_tvk} at depth {depth}")
+                break
+            
+            scientific_name = row['scientific_name']
+            rank = row['rank'].lower() if row['rank'] else ''
+            parent_tvk = row['parent_tvk']
+            
+            # Store the scientific name at this rank level
+            if rank in ['kingdom', 'phylum', 'class', 'order', 'family', 'genus']:
+                if rank not in taxonomy:  # Only store first occurrence (lowest in tree)
+                    taxonomy[rank] = scientific_name
+                    found_ranks.append(rank)
+            
+            # Store parent_tvk from the original species
+            if depth == 0 and parent_tvk:
+                taxonomy['parent_tvk'] = parent_tvk
+            elif depth == 0 and not parent_tvk:
+                logger.warning(f"Species {tvk} has no parent_tvk in hierarchy table")
+                break
+            
+            # Move up to parent
+            current_tvk = parent_tvk
+            depth += 1
+        
+        logger.debug(f"Taxonomy built with {len(found_ranks)} levels: {', '.join(found_ranks)}")
+        
+        return taxonomy
     
     def get_common_names(self, tvk: str) -> List[str]:
         """

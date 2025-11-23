@@ -77,13 +77,7 @@ class UKSISearch:
                 'tvk': tvk,
                 'scientific_name': row['scientific_name'],
                 'common_names': None,  # Will be filled in bulk below
-                'rank': row['rank'],
-                'kingdom': row['kingdom'],
-                'phylum': row['phylum'],
-                'class': row['class'],
-                'order': row['order'],
-                'family': row['family'],
-                'genus': row['genus']
+                'rank': row['rank']
             })
         
         # Bulk fetch all common names (much faster than individual queries)
@@ -126,37 +120,43 @@ class UKSISearch:
         
         where_sql = " AND ".join(where_clauses)
         
-        # Build full query with deduplication
-        # Uses CTE to deduplicate by scientific_name (takes first TVK for each)
+        # Build full query with proper deduplication
+        # Returns ONLY ONE entry per unique scientific name
+        # Picks the best TVK based on: pure species > subspecies > hybrids
         query = f"""
-        WITH unique_taxa AS (
+        WITH ranked_results AS (
             SELECT 
+                t.tvk,
                 t.scientific_name,
-                MIN(t.tvk) as tvk,
-                COUNT(DISTINCT cn.common_name) as common_count
+                t.rank,
+                ROW_NUMBER() OVER (
+                    PARTITION BY t.scientific_name
+                    ORDER BY 
+                        CASE 
+                            WHEN t.scientific_name LIKE '% x %' THEN 3
+                            WHEN t.rank LIKE '%Subspecies%' OR t.rank LIKE '%Variety%' OR t.rank LIKE '%Form%' THEN 2
+                            ELSE 1
+                        END,
+                        LENGTH(t.scientific_name),
+                        t.tvk
+                ) as rn
             FROM taxa t
             LEFT JOIN common_names cn ON t.tvk = cn.tvk
             WHERE {where_sql}
-            GROUP BY t.scientific_name
         )
-        SELECT
-            ut.tvk,
-            t.scientific_name,
-            t.rank,
-            t.kingdom,
-            t.phylum,
-            t.class,
-            t."order",
-            t.family,
-            t.genus
-        FROM unique_taxa ut
-        JOIN taxa t ON ut.tvk = t.tvk
+        SELECT 
+            tvk,
+            scientific_name,
+            rank
+        FROM ranked_results
+        WHERE rn = 1
         ORDER BY 
             CASE 
-                WHEN t.scientific_name LIKE ? COLLATE NOCASE THEN 1
+                WHEN scientific_name LIKE ? COLLATE NOCASE THEN 1
                 ELSE 2
             END,
-            t.scientific_name
+            LENGTH(scientific_name),
+            scientific_name
         LIMIT ?
         """
         
