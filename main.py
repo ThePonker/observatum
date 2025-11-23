@@ -22,6 +22,9 @@ from tabs.home_tab import HomeTab
 from tabs.settings_tab import SettingsTab
 from tabs.data_tab import DataTab
 
+# Import migrations (NEW)
+from database.migrations import DatabaseMigrations
+
 
 class ObservatumApp:
     """Main application class for Observatum"""
@@ -42,6 +45,9 @@ class ObservatumApp:
         self.current_file = None
         self.unsaved_changes = False
 
+        # Run database migrations (NEW)
+        self._run_migrations()
+
         # Create UI components
         self._create_menu_bar()
         self._create_main_container()
@@ -51,14 +57,55 @@ class ObservatumApp:
         # Handle window close event
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+    def _run_migrations(self):
+        """Run database migrations to add iRecord integration fields (NEW)"""
+        try:
+            from database.db_manager import get_db_manager
+            db_manager = get_db_manager()
+            obs_conn = db_manager.get_observations_connection()
+            
+            if DatabaseMigrations.run_all_migrations(obs_conn):
+                logger.info("Database migrations completed successfully")
+            else:
+                logger.warning("Database migrations encountered issues")
+                
+        except Exception as e:
+            logger.error(f"Migration error: {e}")
+            # Don't crash on migration error - app can still function
+            messagebox.showwarning(
+                "Migration Warning",
+                "Some database updates couldn't be applied.\n"
+                "iRecord integration may have limited functionality.\n\n"
+                f"Error: {str(e)}"
+            )
+
     def _create_menu_bar(self):
         """Create the application menu bar"""
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
 
-        # File menu
+        # File menu (UPDATED: Added iRecord submenu)
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
+        
+        # iRecord submenu (NEW)
+        irecord_menu = tk.Menu(file_menu, tearoff=0)
+        file_menu.add_cascade(label="iRecord", menu=irecord_menu)
+        
+        irecord_menu.add_command(
+            label="Import from iRecord CSV...",
+            command=self._import_from_irecord
+        )
+        irecord_menu.add_command(
+            label="Export for iRecord (Unsubmitted)...",
+            command=self._export_for_irecord
+        )
+        irecord_menu.add_command(
+            label="Sync Verification Status...",
+            command=self._sync_with_irecord
+        )
+        
+        file_menu.add_separator()
         file_menu.add_command(label="Save & Exit", command=self.save_and_exit)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_closing)
@@ -150,6 +197,90 @@ class ObservatumApp:
         )
         self.exit_button.pack(side=tk.RIGHT)
 
+    # ====== iRecord Integration Methods (NEW) ======
+
+    def _import_from_irecord(self):
+        """Import records from iRecord CSV"""
+        try:
+            from dialogs.irecord_import_dialog import iRecordImportDialog
+            dialog = iRecordImportDialog(self.root)
+            dialog.wait_window()
+            
+            # Refresh Data tab if open
+            if hasattr(self, 'tabs') and 'Data' in self.tabs:
+                if hasattr(self.tabs['Data'], 'refresh'):
+                    self.tabs['Data'].refresh()
+            
+            # Refresh Home tab stats
+            if hasattr(self, 'tabs') and 'Home' in self.tabs:
+                if hasattr(self.tabs['Home'], '_update_stats'):
+                    self.tabs['Home']._update_stats()
+            
+            self.update_status("iRecord import completed")
+            
+        except ImportError as e:
+            logger.error(f"Import dialog not available: {e}")
+            messagebox.showerror(
+                "Error",
+                "iRecord import dialog not found.\n"
+                "Please ensure all dialog files are installed correctly."
+            )
+        except Exception as e:
+            logger.error(f"Error opening import dialog: {e}")
+            messagebox.showerror("Error", f"Error opening import dialog:\n{str(e)}")
+
+    def _export_for_irecord(self):
+        """Export records to iRecord format"""
+        try:
+            from dialogs.irecord_export_dialog import iRecordExportDialog
+            dialog = iRecordExportDialog(self.root)
+            dialog.wait_window()
+            
+            # Refresh Data tab if open (submission status may have changed)
+            if hasattr(self, 'tabs') and 'Data' in self.tabs:
+                if hasattr(self.tabs['Data'], 'refresh'):
+                    self.tabs['Data'].refresh()
+            
+            self.update_status("iRecord export completed")
+            
+        except ImportError as e:
+            logger.error(f"Export dialog not available: {e}")
+            messagebox.showerror(
+                "Error",
+                "iRecord export dialog not found.\n"
+                "Please ensure all dialog files are installed correctly."
+            )
+        except Exception as e:
+            logger.error(f"Error opening export dialog: {e}")
+            messagebox.showerror("Error", f"Error opening export dialog:\n{str(e)}")
+
+    def _sync_with_irecord(self):
+        """Sync verification status from iRecord"""
+        try:
+            from dialogs.irecord_sync_dialog import iRecordSyncDialog
+            dialog = iRecordSyncDialog(self.root)
+            dialog.wait_window()
+            
+            # Refresh Data tab if open (verification status may have changed)
+            if hasattr(self, 'tabs') and 'Data' in self.tabs:
+                if hasattr(self.tabs['Data'], 'refresh'):
+                    self.tabs['Data'].refresh()
+            
+            self.update_status("iRecord sync completed")
+            
+        except ImportError as e:
+            logger.error(f"Sync dialog not available: {e}")
+            messagebox.showerror(
+                "Error",
+                "iRecord sync dialog not found.\n"
+                "Please ensure all dialog files are installed correctly."
+            )
+        except Exception as e:
+            logger.error(f"Error opening sync dialog: {e}")
+            messagebox.showerror("Error", f"Error opening sync dialog:\n{str(e)}")
+
+    # ====== End iRecord Integration Methods ======
+
     def on_tab_changed(self, event):
         """Handle tab change event"""
         selected_tab = self.notebook.select()
@@ -215,9 +346,14 @@ class ObservatumApp:
         about_text = (
             "Observatum\n"
             "Biological Recording Application\n\n"
-            "Version: 0.1.0 (Development)\n"
+            "Version: 0.2.0 (Development)\n"
             "A modern application for recording wildlife observations\n\n"
-            "Replacing legacy systems like MapMate and Recorder 6"
+            "Replacing legacy systems like MapMate and Recorder 6\n\n"
+            "Features:\n"
+            "• UKSI Integration (204,865 taxa)\n"
+            "• iRecord Import/Export\n"
+            "• Verification Status Tracking\n"
+            "• NBN-Compatible Data Exchange"
         )
         messagebox.showinfo("About Observatum", about_text)
 
