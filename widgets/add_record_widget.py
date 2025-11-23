@@ -2,19 +2,18 @@
 Add Record Widget for Observatum
 Embedded form for adding single observation records
 
-REFACTORED VERSION - Now uses separate components:
+FULLY REFACTORED VERSION - Component-based architecture:
 - SpeciesSearchWidget: Species search functionality
 - RecordFormBuilder: Form layout and field management
-- Validation and submission logic (to be extracted later)
+- RecordSubmissionHandler: Validation and database operations
+- This class: Orchestration only
 """
 
 import tkinter as tk
 from tkinter import ttk, messagebox
-from datetime import datetime
 from pathlib import Path
 import sys
 import logging
-import uuid
 import json
 
 # Add project root to path
@@ -23,16 +22,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Import UKSI handler
 from database.uksi_handler import UKSIHandler
 
-# Import new components
+# Import components
 from widgets.species_search_widget import SpeciesSearchWidget
 from widgets.record_form_builder import RecordFormBuilder
+from utils.record_submission_handler import RecordSubmissionHandler
 
 # Import validators
 try:
-    from utils.validators import GridReferenceValidator, validate_all_record_fields
+    from utils.validators import GridReferenceValidator
 except ImportError:
     GridReferenceValidator = None
-    validate_all_record_fields = None
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +40,11 @@ class AddRecordWidget(ttk.LabelFrame):
     """
     Widget for adding single observation records
     
-    Refactored to use component-based architecture:
-    - SpeciesSearchWidget handles species search
-    - RecordFormBuilder handles form layout
-    - This class orchestrates and handles submission
+    Fully refactored component-based architecture:
+    - SpeciesSearchWidget: Handles species search and selection
+    - RecordFormBuilder: Manages form layout and fields
+    - RecordSubmissionHandler: Handles validation and database operations
+    - AddRecordWidget: Orchestrates components and user interactions
     """
     
     def __init__(self, parent, app_instance, **kwargs):
@@ -74,7 +74,7 @@ class AddRecordWidget(ttk.LabelFrame):
                 "Species search will not be available."
             )
         
-        # Track selected species details
+        # Track selected species
         self.selected_species = None
         
         # Configure grid
@@ -86,6 +86,8 @@ class AddRecordWidget(ttk.LabelFrame):
         
         # Build form
         self._create_form()
+        
+        logger.info("AddRecordWidget initialized successfully")
     
     def _load_settings(self):
         """Load settings from JSON file"""
@@ -95,12 +97,13 @@ class AddRecordWidget(ttk.LabelFrame):
             try:
                 with open(config_file, 'r') as f:
                     return json.load(f)
-            except:
+            except Exception as e:
+                logger.warning(f"Failed to load settings: {e}")
                 return {}
         return {}
     
     def _create_components(self):
-        """Create the component instances"""
+        """Create component instances"""
         # Create species search widget
         self.species_search = SpeciesSearchWidget(
             self,
@@ -110,6 +113,9 @@ class AddRecordWidget(ttk.LabelFrame):
         
         # Create form builder
         self.form_builder = RecordFormBuilder(self, self.settings)
+        
+        # Create submission handler
+        self.submission_handler = RecordSubmissionHandler(self.app)
         
         logger.debug("Components created successfully")
     
@@ -124,11 +130,10 @@ class AddRecordWidget(ttk.LabelFrame):
         # Add buttons at bottom
         self._create_buttons()
         
-        logger.info("Add Record form created successfully")
+        logger.debug("Form built successfully")
     
     def _create_buttons(self):
         """Create Submit and Cancel buttons"""
-        # Button frame at bottom
         button_frame = ttk.Frame(self)
         button_frame.grid(row=100, column=0, columnspan=2, pady=(10, 0))
         
@@ -150,10 +155,10 @@ class AddRecordWidget(ttk.LabelFrame):
     
     def _on_species_selected(self, species):
         """
-        Callback when species is selected from search
+        Callback when species is selected
         
         Args:
-            species: Species dict with TVK and name
+            species: Species dict with TVK and scientific name
         """
         self.selected_species = species
         logger.debug(f"Species selected: {species.get('scientific_name', 'Unknown')}")
@@ -180,142 +185,38 @@ class AddRecordWidget(ttk.LabelFrame):
             if len(gridref) >= 4:
                 status_label.config(text="?", foreground="orange")
     
-    def _validate_form(self):
-        """
-        Validate that all mandatory fields are filled
-        
-        Returns:
-            tuple: (is_valid, error_message)
-        """
-        errors = []
-        field_values = self.form_builder.get_field_values()
-        
-        # Check mandatory fields
-        if not field_values.get('site_name', '').strip():
-            errors.append("Site Name")
-        if not field_values.get('grid_reference', '').strip():
-            errors.append("Grid Ref")
-        if not field_values.get('date', '').strip():
-            errors.append("Date")
-        if not field_values.get('recorder', '').strip():
-            errors.append("Recorder")
-        if not field_values.get('determiner', '').strip():
-            errors.append("Determiner")
-        if not field_values.get('certainty', '').strip():
-            errors.append("Certainty")
-        
-        # Check species selection
-        if not self.selected_species or 'tvk' not in self.selected_species:
-            errors.insert(0, "Species Search (must select a species)")
-        
-        if errors:
-            return False, "The following mandatory fields are missing:\n\n• " + "\n• ".join(errors)
-        
-        return True, ""
-    
     def _submit_record(self):
-        """Submit the record to the database"""
-        # Validate form
-        is_valid, error_msg = self._validate_form()
+        """
+        Submit the record using RecordSubmissionHandler
         
-        if not is_valid:
-            messagebox.showerror("Validation Error", error_msg)
-            return
-        
-        # Get field values
+        Orchestrates: validation → data collection → submission → UI update
+        """
+        # Get field values from form
         field_values = self.form_builder.get_field_values()
         
-        # Collect record data
-        record_data = {
-            'uuid': str(uuid.uuid4()),
-            'species_name': self.selected_species['scientific_name'],
-            'taxon_id': self.selected_species['tvk'],
-            'site_name': field_values['site_name'].strip(),
-            'grid_reference': field_values['grid_reference'].strip(),
-            'date': field_values['date'].strip(),
-            'recorder': field_values['recorder'].strip(),
-            'determiner': field_values['determiner'].strip(),
-            'certainty': field_values['certainty'],
-            'sex': field_values.get('sex') if field_values.get('sex') else None,
-            'quantity': int(field_values['quantity']) if field_values.get('quantity', '').strip().isdigit() else None,
-            'sample_method': field_values.get('sample_method').strip() if field_values.get('sample_method', '').strip() else None,
-            'observation_type': field_values.get('observation_type').strip() if field_values.get('observation_type', '').strip() else None,
-            'sample_comment': field_values.get('sample_comment', '').strip() if field_values.get('sample_comment', '').strip() else None,
-            'verification_status': 'Not reviewed',
-            'submitted_to_irecord': 0
-        }
+        # Submit using handler (validates, prepares, saves)
+        success, message, errors = self.submission_handler.submit_record(
+            field_values,
+            self.selected_species
+        )
         
-        # Save to database
-        try:
-            from database.db_manager import get_db_manager
-            db_manager = get_db_manager()
-            obs_conn = db_manager.get_observations_connection()
-            cursor = obs_conn.cursor()
+        if success:
+            # Show success message
+            messagebox.showinfo("Record Saved", message)
             
-            cursor.execute("""
-                INSERT INTO records (
-                    uuid, species_name, taxon_id, site_name, grid_reference, date,
-                    recorder, determiner, certainty, sex, quantity,
-                    sample_method, observation_type, sample_comment,
-                    verification_status, submitted_to_irecord
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                record_data['uuid'],
-                record_data['species_name'],
-                record_data['taxon_id'],
-                record_data['site_name'],
-                record_data['grid_reference'],
-                record_data['date'],
-                record_data['recorder'],
-                record_data['determiner'],
-                record_data['certainty'],
-                record_data['sex'],
-                record_data['quantity'],
-                record_data['sample_method'],
-                record_data['observation_type'],
-                record_data['sample_comment'],
-                record_data['verification_status'],
-                record_data['submitted_to_irecord']
-            ))
-            
-            obs_conn.commit()
-            
-            # Refresh Home tab stats FIRST (before showing dialog)
-            if hasattr(self.app, 'tabs') and 'Home' in self.app.tabs:
-                home_tab = self.app.tabs['Home']
-                if hasattr(home_tab, '_update_stats'):
-                    try:
-                        home_tab._update_stats()
-                        self.app.root.update()
-                    except Exception as e:
-                        logger.warning(f"Failed to refresh stats: {e}")
-            
-            # Show success dialog
-            messagebox.showinfo(
-                "Record Saved",
-                f"Observation record for {record_data['species_name']} has been saved successfully!\n\n"
-                f"TVK: {record_data['taxon_id']}"
-            )
-            
-            logger.info(f"Saved record: {record_data['species_name']} (TVK: {record_data['taxon_id']})")
-            
-            # Clear form after successful submission
+            # Clear form for next entry
             self._clear_form()
-            
-        except Exception as e:
-            logger.error(f"Error saving record: {e}")
-            messagebox.showerror(
-                "Database Error",
-                f"Failed to save record:\n\n{str(e)}"
-            )
+        else:
+            # Show error message
+            messagebox.showerror("Validation Error" if errors else "Database Error", message)
     
     def _clear_form(self):
-        """Clear all form fields (except defaults from settings)"""
-        # Clear form fields using builder
+        """Clear form fields and reset to defaults"""
+        # Clear form using builder
         self.form_builder.clear_fields(keep_defaults=True)
         
         # Clear species search
         self.species_search.clear()
         self.selected_species = None
         
-        logger.debug("Form cleared")
+        logger.debug("Form cleared and reset")
