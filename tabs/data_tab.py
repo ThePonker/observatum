@@ -2,17 +2,10 @@
 Data Tab for Observatum
 View, filter, edit, and delete observation records
 
-Features:
-- Sortable table view of all records
-- Advanced filtering (date, species, site, recorder)
-- Edit records (double-click)
-- Delete records (selected)
-- Export to CSV
-- Bulk operations
-- iRecord status tracking (NEW)
-- Verification status display (NEW)
-
-UPDATED: 23 November 2025 - Added iRecord integration columns
+REFACTORED VERSION - Component-based architecture:
+- RecordTableWidget: Table display with sorting
+- RecordQueryBuilder: SQL query generation with filters
+- This class: Orchestration and data operations
 """
 
 import tkinter as tk
@@ -27,6 +20,12 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tabs.base_tab import BaseTab
+
+# Import new components
+from widgets.record_table_widget import RecordTableWidget
+from database.record_query_builder import RecordQueryBuilder
+
+# Import optional components
 try:
     from widgets.filter_panel import FilterPanel
     from dialogs.edit_record_dialog import EditRecordDialog
@@ -38,7 +37,13 @@ logger = logging.getLogger(__name__)
 
 
 class DataTab(BaseTab):
-    """Data tab for viewing and managing records"""
+    """
+    Data tab for viewing and managing records
+    
+    Refactored to use:
+    - RecordTableWidget for display
+    - RecordQueryBuilder for SQL queries
+    """
     
     def setup_ui(self):
         """Create the data tab interface"""
@@ -56,9 +61,12 @@ class DataTab(BaseTab):
             self.filter_panel = None
             logger.warning("FilterPanel not available - filtering disabled")
         
-        # Records table
-        table_frame = self._create_records_table(main_container)
-        table_frame.grid(row=1, column=0, sticky="nsew")
+        # Create query builder
+        self.query_builder = RecordQueryBuilder(table_name='records')
+        
+        # Records table using RecordTableWidget
+        table_container = self._create_records_table(main_container)
+        table_container.grid(row=1, column=0, sticky="nsew")
         
         # Action buttons at bottom
         button_frame = self._create_action_buttons(main_container)
@@ -67,75 +75,55 @@ class DataTab(BaseTab):
         # Load initial data
         self._load_records()
         
+        logger.info("DataTab initialized successfully")
+    
     def _create_records_table(self, parent) -> ttk.Frame:
         """
-        Create the records table view
+        Create the records table view using RecordTableWidget
         
         Args:
             parent: Parent widget
             
         Returns:
-            Frame containing table
+            Frame containing table and count label
         """
-        table_frame = ttk.Frame(parent)
-        table_frame.columnconfigure(0, weight=1)
-        table_frame.rowconfigure(0, weight=1)
+        # Container frame
+        container = ttk.Frame(parent)
+        container.columnconfigure(0, weight=1)
+        container.rowconfigure(0, weight=1)
         
-        # Create treeview with scrollbars
-        vsb = ttk.Scrollbar(table_frame, orient="vertical")
-        vsb.grid(row=0, column=1, sticky="ns")
+        # Define columns for the table
+        columns = [
+            {'id': 'id', 'heading': 'ID', 'width': 50, 'anchor': 'center'},
+            {'id': 'date', 'heading': 'Date', 'width': 100},
+            {'id': 'species', 'heading': 'Species', 'width': 200},
+            {'id': 'site', 'heading': 'Site', 'width': 150},
+            {'id': 'gridref', 'heading': 'Grid Ref', 'width': 100},
+            {'id': 'recorder', 'heading': 'Recorder', 'width': 120},
+            {'id': 'determiner', 'heading': 'Determiner', 'width': 120},
+            {'id': 'quantity', 'heading': 'Qty', 'width': 50, 'anchor': 'center'},
+            {'id': 'certainty', 'heading': 'Certainty', 'width': 100}
+        ]
         
-        hsb = ttk.Scrollbar(table_frame, orient="horizontal")
-        hsb.grid(row=1, column=0, sticky="ew")
-        
-        # Define columns - UPDATED: Added iRecord and Verification columns
-        columns = (
-            "ID", "Date", "Species", "Site", "Grid Ref", 
-            "Recorder", "Determiner", "Quantity", "Certainty",
-            "iRecord", "Verification"  # NEW COLUMNS
-        )
-        
-        self.tree = ttk.Treeview(
-            table_frame,
+        # Create table widget
+        self.table = RecordTableWidget(
+            container,
             columns=columns,
-            show="headings",
-            yscrollcommand=vsb.set,
-            xscrollcommand=hsb.set,
-            selectmode="extended"
+            on_double_click=self._edit_selected,
+            on_selection_changed=self._on_selection_changed
         )
-        self.tree.grid(row=0, column=0, sticky="nsew")
+        self.table.grid(row=0, column=0, sticky="nsew")
         
-        vsb.config(command=self.tree.yview)
-        hsb.config(command=self.tree.xview)
+        # Count label at bottom
+        self.count_label = ttk.Label(container, text="0 records")
+        self.count_label.grid(row=1, column=0, sticky="w", pady=(5, 0))
         
-        # Configure columns - UPDATED: Added new column configurations
-        column_config = {
-            "ID": (50, tk.CENTER),
-            "Date": (100, tk.CENTER),
-            "Species": (200, tk.W),
-            "Site": (150, tk.W),
-            "Grid Ref": (100, tk.CENTER),
-            "Recorder": (120, tk.W),
-            "Determiner": (120, tk.W),
-            "Quantity": (70, tk.CENTER),
-            "Certainty": (80, tk.CENTER),
-            "iRecord": (70, tk.CENTER),      # NEW
-            "Verification": (120, tk.CENTER)  # NEW
-        }
+        # Add right-click context menu to tree
+        tree = self.table.get_tree_widget()
+        tree.bind('<Button-3>', self._show_context_menu)
         
-        for col in columns:
-            width, anchor = column_config.get(col, (100, tk.W))
-            self.tree.heading(col, text=col, command=lambda c=col: self._sort_column(c))
-            self.tree.column(col, width=width, anchor=anchor)
-        
-        # Bind double-click to edit
-        self.tree.bind("<Double-Button-1>", self._on_double_click)
-        
-        # Bind right-click for context menu
-        self.tree.bind("<Button-3>", self._show_context_menu)
-        
-        return table_frame
-        
+        return container
+    
     def _create_action_buttons(self, parent) -> ttk.Frame:
         """
         Create action buttons
@@ -148,39 +136,55 @@ class DataTab(BaseTab):
         """
         button_frame = ttk.Frame(parent)
         
-        # Left side buttons
+        # Import button
+        ttk.Button(
+            button_frame,
+            text="Import CSV",
+            command=self._import_csv,
+            width=12
+        ).pack(side=tk.LEFT, padx=5)
+        
+        # Export button
+        ttk.Button(
+            button_frame,
+            text="Export CSV",
+            command=self._export_to_csv,
+            width=12
+        ).pack(side=tk.LEFT, padx=5)
+        
+        # Separator
+        ttk.Separator(button_frame, orient='vertical').pack(side=tk.LEFT, fill='y', padx=10)
+        
+        # Edit button
+        self.edit_button = ttk.Button(
+            button_frame,
+            text="Edit",
+            command=self._edit_selected,
+            width=10,
+            state='disabled'
+        )
+        self.edit_button.pack(side=tk.LEFT, padx=5)
+        
+        # Delete button
+        self.delete_button = ttk.Button(
+            button_frame,
+            text="Delete",
+            command=self._delete_selected,
+            width=10,
+            state='disabled'
+        )
+        self.delete_button.pack(side=tk.LEFT, padx=5)
+        
+        # Separator
+        ttk.Separator(button_frame, orient='vertical').pack(side=tk.LEFT, fill='y', padx=10)
+        
+        # Refresh button
         ttk.Button(
             button_frame,
             text="Refresh",
-            command=self._load_records,
-            width=12
-        ).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(
-            button_frame,
-            text="Edit Selected",
-            command=self._edit_selected,
-            width=12
+            command=self.refresh,
+            width=10
         ).pack(side=tk.LEFT, padx=5)
-        
-        ttk.Button(
-            button_frame,
-            text="Delete Selected",
-            command=self._delete_selected,
-            width=14
-        ).pack(side=tk.LEFT, padx=5)
-        
-        # Right side buttons
-        ttk.Button(
-            button_frame,
-            text="Export to CSV",
-            command=self._export_to_csv,
-            width=14
-        ).pack(side=tk.RIGHT)
-        
-        # Record count label
-        self.count_label = ttk.Label(button_frame, text="0 records", foreground="gray")
-        self.count_label.pack(side=tk.RIGHT, padx=(0, 10))
         
         return button_frame
     
@@ -197,184 +201,89 @@ class DataTab(BaseTab):
             conn = db_manager.get_observations_connection()
             cursor = conn.cursor()
             
-            # Build query with filters - UPDATED: Include iRecord fields
-            query = """
-                SELECT 
-                    id, date, species_name, site_name, grid_reference,
-                    recorder, determiner, quantity, certainty,
-                    taxon_id, sex, sample_method, observation_type, sample_comment,
-                    created_at,
-                    irecord_key, submitted_to_irecord, verification_status
-                FROM records
-                WHERE 1=1
-            """
-            params = []
+            # Use query builder to get records
+            raw_records = self.query_builder.execute_query(cursor, filters)
             
-            if filters:
-                # Search filter (searches species, site, recorder)
-                if filters.get('search'):
-                    search_term = f"%{filters['search']}%"
-                    query += """ AND (
-                        species_name LIKE ? OR 
-                        site_name LIKE ? OR 
-                        recorder LIKE ?
-                    )"""
-                    params.extend([search_term, search_term, search_term])
-                
-                # Date range filters
-                if filters.get('date_from'):
-                    query += " AND date >= ?"
-                    params.append(filters['date_from'])
-                
-                if filters.get('date_to'):
-                    query += " AND date <= ?"
-                    params.append(filters['date_to'])
-                
-                # Species filter
-                if filters.get('species'):
-                    query += " AND species_name = ?"
-                    params.append(filters['species'])
-                
-                # Site filter
-                if filters.get('site'):
-                    query += " AND site_name = ?"
-                    params.append(filters['site'])
-                
-                # Recorder filter
-                if filters.get('recorder'):
-                    query += " AND recorder = ?"
-                    params.append(filters['recorder'])
+            # Format records for display (extract only the fields we need for the table)
+            formatted_records = []
+            for record in raw_records:
+                # Extract fields matching our column order
+                formatted_record = (
+                    record[0],   # id
+                    record[1],   # date
+                    record[2],   # species_name
+                    record[3],   # site_name
+                    record[4],   # grid_reference
+                    record[5],   # recorder
+                    record[6],   # determiner
+                    record[7] if record[7] else "",  # quantity (blank if None)
+                    record[8]    # certainty
+                )
+                formatted_records.append(formatted_record)
             
-            query += " ORDER BY date DESC, id DESC"
-            
-            cursor.execute(query, params)
-            records = cursor.fetchall()
-            
-            # Clear existing items
-            for item in self.tree.get_children():
-                self.tree.delete(item)
-            
-            # Populate table - UPDATED: Include iRecord status
-            for record in records:
-                # Determine iRecord status icon
-                if record['irecord_key']:
-                    irecord_icon = "✓"  # In iRecord (has RecordKey)
-                elif record['submitted_to_irecord']:
-                    irecord_icon = "⏳"  # Submitted, pending sync
-                else:
-                    irecord_icon = "✗"  # Local only
-                
-                # Format verification status
-                status = record['verification_status'] if record['verification_status'] else 'Not reviewed'
-                if status == 'Accepted':
-                    verify_text = "✓ Accepted"
-                elif status == 'Plausible':
-                    verify_text = "~ Plausible"
-                elif status == 'Unable to verify':
-                    verify_text = "? Unable"
-                elif status == 'Incorrect':
-                    verify_text = "✗ Incorrect"
-                elif status == 'Not reviewed':
-                    verify_text = "- Not reviewed"
-                else:
-                    verify_text = status
-                
-                # Insert row
-                item_id = self.tree.insert('', 'end', iid=record['id'], values=(
-                    record['id'],
-                    record['date'],
-                    record['species_name'],
-                    record['site_name'],
-                    record['grid_reference'],
-                    record['recorder'],
-                    record['determiner'],
-                    record['quantity'] if record['quantity'] else '',
-                    record['certainty'],
-                    irecord_icon,     # NEW COLUMN
-                    verify_text       # NEW COLUMN
-                ))
+            # Load into table widget
+            self.table.load_records(formatted_records)
             
             # Update count
-            count = len(records)
-            self.count_label.config(text=f"{count:,} record{'s' if count != 1 else ''}")
+            record_count = len(formatted_records)
+            self.count_label.config(text=f"{record_count:,} record{'s' if record_count != 1 else ''}")
             
-            # Update filter options if filter panel exists
-            if self.filter_panel and records:
-                species_list = sorted(set(r['species_name'] for r in records))
-                site_list = sorted(set(r['site_name'] for r in records))
-                recorder_list = sorted(set(r['recorder'] for r in records))
+            # Update filter panel if available
+            if self.filter_panel:
+                species_list = self.query_builder.get_distinct_values(cursor, 'species_name')
+                site_list = self.query_builder.get_distinct_values(cursor, 'site_name')
+                recorder_list = self.query_builder.get_distinct_values(cursor, 'recorder')
+                
                 self.filter_panel.update_filter_options(species_list, site_list, recorder_list)
-                self.filter_panel.update_count(count)
+                self.filter_panel.update_count(record_count)
             
-            logger.info(f"Loaded {count} records")
+            self.update_status(f"Loaded {record_count:,} records")
+            logger.info(f"Loaded {record_count} records")
             
         except Exception as e:
-            logger.error(f"Error loading records: {e}")
+            logger.error(f"Error loading records: {e}", exc_info=True)
             messagebox.showerror("Database Error", f"Failed to load records:\n\n{str(e)}")
     
     def _on_filter_changed(self, filters: dict):
         """
-        Handle filter changes
+        Called when filter values change
         
         Args:
             filters: Dictionary of filter values
         """
         self._load_records(filters)
     
-    def _sort_column(self, col: str):
+    def _on_selection_changed(self, selected_ids):
         """
-        Sort treeview by column
+        Called when table selection changes
         
         Args:
-            col: Column name to sort by
+            selected_ids: List of selected record IDs
         """
-        # Get all items
-        items = [(self.tree.set(item, col), item) for item in self.tree.get_children('')]
-        
-        # Determine sort direction (toggle)
-        if hasattr(self, '_last_sort_col') and self._last_sort_col == col:
-            self._sort_reverse = not getattr(self, '_sort_reverse', False)
-        else:
-            self._sort_reverse = False
-        
-        self._last_sort_col = col
-        
-        # Sort items
-        try:
-            # Try numeric sort first
-            items.sort(key=lambda x: int(x[0]) if x[0] else 0, reverse=self._sort_reverse)
-        except (ValueError, TypeError):
-            # Fall back to string sort
-            items.sort(key=lambda x: x[0].lower() if x[0] else '', reverse=self._sort_reverse)
-        
-        # Rearrange items in tree
-        for index, (val, item) in enumerate(items):
-            self.tree.move(item, '', index)
+        # Enable/disable action buttons based on selection
+        has_selection = len(selected_ids) > 0
+        self.edit_button.config(state='normal' if has_selection else 'disabled')
+        self.delete_button.config(state='normal' if has_selection else 'disabled')
     
-    def _on_double_click(self, event):
-        """Handle double-click to edit record"""
-        self._edit_selected()
-    
-    def _edit_selected(self):
-        """Edit the selected record"""
-        selection = self.tree.selection()
+    def _edit_selected(self, record_id=None):
+        """
+        Edit selected record(s)
         
-        if not selection:
-            messagebox.showwarning("No Selection", "Please select a record to edit.")
-            return
-        
-        if len(selection) > 1:
-            messagebox.showwarning("Multiple Selection", "Please select only one record to edit.")
-            return
-        
+        Args:
+            record_id: Specific record ID to edit (from double-click)
+        """
         if not EditRecordDialog:
-            messagebox.showerror("Feature Unavailable", "Edit dialog not available.")
+            messagebox.showinfo("Not Available", "Edit dialog not yet implemented")
             return
         
-        # Get record ID
-        record_id = selection[0]
+        # Get record ID to edit
+        if record_id is None:
+            selected = self.table.get_selected_ids()
+            if not selected:
+                return
+            record_id = selected[0]  # Edit first selected
         
-        # Load full record data from database
+        # Get full record data from database
         try:
             from database.db_manager import get_db_manager
             db_manager = get_db_manager()
@@ -382,195 +291,180 @@ class DataTab(BaseTab):
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT * FROM records WHERE id = ?
+                SELECT 
+                    id, species_name, taxon_id, site_name, grid_reference, date,
+                    recorder, determiner, certainty, sex, quantity,
+                    sample_method, observation_type, sample_comment
+                FROM records WHERE id = ?
             """, (record_id,))
             
-            row = cursor.fetchone()
-            if not row:
-                messagebox.showerror("Error", "Record not found in database.")
+            record = cursor.fetchone()
+            
+            if not record:
+                messagebox.showerror("Error", "Record not found")
                 return
             
-            # Convert to dictionary
-            columns = [description[0] for description in cursor.description]
-            record_data = dict(zip(columns, row))
+            # Convert to dict
+            record_data = {
+                'id': record[0],
+                'species_name': record[1],
+                'taxon_id': record[2],
+                'site_name': record[3],
+                'grid_reference': record[4],
+                'date': record[5],
+                'recorder': record[6],
+                'determiner': record[7],
+                'certainty': record[8],
+                'sex': record[9],
+                'quantity': record[10],
+                'sample_method': record[11],
+                'observation_type': record[12],
+                'sample_comment': record[13]
+            }
             
             # Open edit dialog
-            EditRecordDialog(self, record_data, self._on_record_saved)
+            dialog = EditRecordDialog(self, record_data, self._on_record_saved)
             
         except Exception as e:
-            logger.error(f"Error loading record for edit: {e}")
-            messagebox.showerror("Database Error", f"Failed to load record:\n\n{str(e)}")
+            logger.error(f"Error loading record for edit: {e}", exc_info=True)
+            messagebox.showerror("Error", f"Failed to load record:\n\n{str(e)}")
     
     def _on_record_saved(self, updated_data: dict):
         """
         Callback when record is saved from edit dialog
         
         Args:
-            updated_data: Dictionary with updated record data
+            updated_data: Updated record data
         """
-        try:
-            from database.db_manager import get_db_manager
-            db_manager = get_db_manager()
-            conn = db_manager.get_observations_connection()
-            cursor = conn.cursor()
-            
-            # Update record
-            cursor.execute("""
-                UPDATE records SET
-                    species_name = ?,
-                    site_name = ?,
-                    grid_reference = ?,
-                    date = ?,
-                    recorder = ?,
-                    determiner = ?,
-                    certainty = ?,
-                    sex = ?,
-                    quantity = ?,
-                    sample_method = ?,
-                    observation_type = ?,
-                    sample_comment = ?
-                WHERE id = ?
-            """, (
-                updated_data['species_name'],
-                updated_data['site_name'],
-                updated_data['grid_reference'],
-                updated_data['date'],
-                updated_data['recorder'],
-                updated_data['determiner'],
-                updated_data['certainty'],
-                updated_data['sex'],
-                updated_data['quantity'],
-                updated_data['sample_method'],
-                updated_data['observation_type'],
-                updated_data['sample_comment'],
-                updated_data['id']
-            ))
-            
-            conn.commit()
-            
-            # Reload records
-            filters = self.filter_panel.get_filters() if self.filter_panel else None
-            self._load_records(filters)
-            
-            self.update_status(f"Record #{updated_data['id']} updated successfully")
-            
-        except Exception as e:
-            logger.error(f"Error saving record: {e}")
-            messagebox.showerror("Save Error", f"Failed to save record:\n\n{str(e)}")
+        # Refresh table
+        self._load_records()
+        
+        # Show success message
+        messagebox.showinfo("Success", "Record updated successfully")
     
     def _delete_selected(self):
-        """Delete selected records"""
-        selection = self.tree.selection()
+        """Delete selected record(s)"""
+        selected = self.table.get_selected_ids()
         
-        if not selection:
-            messagebox.showwarning("No Selection", "Please select record(s) to delete.")
+        if not selected:
             return
         
         # Confirm deletion
-        count = len(selection)
-        result = messagebox.askyesno(
-            "Confirm Deletion",
-            f"Are you sure you want to delete {count} record{'s' if count > 1 else ''}?\n\n"
-            "This action cannot be undone.",
-            icon=messagebox.WARNING
-        )
+        count = len(selected)
+        message = f"Are you sure you want to delete {count} record{'s' if count != 1 else ''}?\n\n"
+        message += "This action cannot be undone."
         
-        if not result:
+        if not messagebox.askyesno("Confirm Delete", message):
             return
         
+        # Delete records
         try:
             from database.db_manager import get_db_manager
             db_manager = get_db_manager()
             conn = db_manager.get_observations_connection()
             cursor = conn.cursor()
             
-            # Delete each record
-            for record_id in selection:
+            # Delete each selected record
+            for record_id in selected:
                 cursor.execute("DELETE FROM records WHERE id = ?", (record_id,))
             
             conn.commit()
             
-            # Reload records
-            filters = self.filter_panel.get_filters() if self.filter_panel else None
-            self._load_records(filters)
+            # Refresh table
+            self._load_records()
             
-            self.update_status(f"Deleted {count} record{'s' if count > 1 else ''}")
+            self.update_status(f"Deleted {count} record{'s' if count != 1 else ''}")
+            messagebox.showinfo("Success", f"Deleted {count} record{'s' if count != 1 else ''} successfully")
             
         except Exception as e:
-            logger.error(f"Error deleting records: {e}")
-            messagebox.showerror("Delete Error", f"Failed to delete records:\n\n{str(e)}")
+            logger.error(f"Error deleting records: {e}", exc_info=True)
+            messagebox.showerror("Error", f"Failed to delete records:\n\n{str(e)}")
     
     def _export_to_csv(self):
         """Export visible records to CSV"""
-        # Get all visible records
-        items = self.tree.get_children()
-        
-        if not items:
-            messagebox.showinfo("No Data", "No records to export.")
-            return
-        
-        # Ask for save location
-        filename = filedialog.asksaveasfilename(
-            title="Export to CSV",
+        # Get file path from user
+        file_path = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-            initialfile=f"observatum_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            title="Export Records to CSV"
         )
         
-        if not filename:
+        if not file_path:
             return
         
         try:
-            with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+            # Get tree widget to access displayed data
+            tree = self.table.get_tree_widget()
+            
+            # Get column names
+            columns = [col['heading'] for col in self.table.columns]
+            
+            # Open CSV file for writing
+            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
                 
                 # Write header
-                columns = self.tree['columns']
                 writer.writerow(columns)
                 
-                # Write data
-                for item in items:
-                    values = [self.tree.set(item, col) for col in columns]
+                # Write data rows
+                for item in tree.get_children():
+                    values = tree.item(item)['values']
                     writer.writerow(values)
             
-            messagebox.showinfo(
-                "Export Successful",
-                f"Exported {len(items)} records to:\n\n{filename}"
-            )
-            self.update_status(f"Exported {len(items)} records to CSV")
+            record_count = self.table.get_record_count()
+            messagebox.showinfo("Export Complete", f"Exported {record_count} records to:\n{file_path}")
+            self.update_status(f"Exported {record_count} records to CSV")
             
         except Exception as e:
-            logger.error(f"Error exporting to CSV: {e}")
-            messagebox.showerror("Export Error", f"Failed to export:\n\n{str(e)}")
+            logger.error(f"Error exporting to CSV: {e}", exc_info=True)
+            messagebox.showerror("Export Error", f"Failed to export records:\n\n{str(e)}")
+    
+    def _import_csv(self):
+        """Import records from CSV (placeholder)"""
+        messagebox.showinfo("Not Implemented", "CSV import functionality coming soon!")
     
     def _show_context_menu(self, event):
-        """Show right-click context menu"""
-        # Select item under cursor
-        item = self.tree.identify_row(event.y)
-        if item:
-            self.tree.selection_set(item)
-            
-            # Create context menu
-            menu = tk.Menu(self, tearoff=0)
-            menu.add_command(label="Edit Record", command=self._edit_selected)
-            menu.add_command(label="Delete Record", command=self._delete_selected)
-            menu.add_separator()
-            menu.add_command(label="Copy Grid Reference", command=lambda: self._copy_field('Grid Ref'))
-            menu.add_command(label="Copy Species Name", command=lambda: self._copy_field('Species'))
-            
-            menu.post(event.x_root, event.y_root)
+        """
+        Show context menu on right-click
+        
+        Args:
+            event: Click event
+        """
+        # Get tree widget
+        tree = self.table.get_tree_widget()
+        
+        # Identify clicked item
+        item = tree.identify_row(event.y)
+        if not item:
+            return
+        
+        # Select the item
+        tree.selection_set(item)
+        
+        # Create context menu
+        menu = tk.Menu(self, tearoff=0)
+        menu.add_command(label="Edit", command=lambda: self._edit_selected(item))
+        menu.add_command(label="Delete", command=self._delete_selected)
+        menu.add_separator()
+        menu.add_command(label="Copy ID", command=lambda: self._copy_field('id'))
+        menu.add_command(label="Copy Species", command=lambda: self._copy_field('species'))
+        
+        # Show menu
+        menu.post(event.x_root, event.y_root)
     
     def _copy_field(self, column: str):
-        """Copy field value to clipboard"""
-        selection = self.tree.selection()
-        if selection:
-            value = self.tree.set(selection[0], column)
+        """
+        Copy field value to clipboard
+        
+        Args:
+            column: Column ID to copy
+        """
+        values = self.table.get_selected_values(column)
+        if values:
             self.clipboard_clear()
-            self.clipboard_append(value)
-            self.update_status(f"Copied {column}: {value}")
+            self.clipboard_append(values[0])
+            self.update_status(f"Copied {column}: {values[0]}")
     
     def refresh(self):
-        """Refresh the data tab"""
-        filters = self.filter_panel.get_filters() if self.filter_panel else None
-        self._load_records(filters)
-        self.update_status("Data tab refreshed")
+        """Refresh the records table"""
+        self._load_records()
