@@ -19,6 +19,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Import UKSI handler
 from database.uksi_handler import UKSIHandler
 
+# Import validators
+try:
+    from utils.validators import GridReferenceValidator, validate_all_record_fields
+except ImportError:
+    # Fallback if validators not yet in utils
+    GridReferenceValidator = None
+    validate_all_record_fields = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -134,9 +142,18 @@ class AddRecordWidget(ttk.LabelFrame):
         ttk.Label(self, text="Grid Ref:*", foreground="red").grid(
             row=row, column=0, sticky="w", pady=3
         )
+        gridref_frame = ttk.Frame(self)
+        gridref_frame.grid(row=row, column=1, sticky="ew", pady=3)
+        gridref_frame.columnconfigure(0, weight=1)
+        
         self.gridref_var = tk.StringVar()
-        self.gridref_entry = ttk.Entry(self, textvariable=self.gridref_var)
-        self.gridref_entry.grid(row=row, column=1, sticky="ew", pady=3)
+        self.gridref_var.trace('w', self._validate_gridref)
+        self.gridref_entry = ttk.Entry(gridref_frame, textvariable=self.gridref_var)
+        self.gridref_entry.grid(row=0, column=0, sticky="ew", padx=(0, 5))
+        
+        # Validation indicator
+        self.gridref_status = ttk.Label(gridref_frame, text="", foreground="gray", width=3)
+        self.gridref_status.grid(row=0, column=1)
         row += 1
         
         # Date* (Mandatory)
@@ -278,6 +295,22 @@ class AddRecordWidget(ttk.LabelFrame):
         # Debounce: wait 250ms after user stops typing before searching
         if self.uksi:
             self._autocomplete_timer = self.after(250, lambda: self._show_autocomplete(search_term))
+    
+    def _validate_gridref(self, *args):
+        """Validate grid reference as user types"""
+        if not GridReferenceValidator:
+            return  # Validator not available
+        
+        gridref = self.gridref_var.get().strip()
+        if not gridref:
+            self.gridref_status.config(text="", foreground="gray")
+            return
+        
+        is_valid, error = GridReferenceValidator.validate(gridref)
+        if is_valid:
+            self.gridref_status.config(text="✓", foreground="green")
+        else:
+            self.gridref_status.config(text="✗", foreground="red")
     
     def _on_species_focus_out(self, event):
         """Handle focus out - delay closing autocomplete to allow selection"""
@@ -563,6 +596,17 @@ class AddRecordWidget(ttk.LabelFrame):
             
             obs_conn.commit()
             
+            # Refresh Home tab stats FIRST (before showing dialog)
+            if hasattr(self.app, 'tabs') and 'Home' in self.app.tabs:
+                home_tab = self.app.tabs['Home']
+                if hasattr(home_tab, '_update_stats'):
+                    try:
+                        home_tab._update_stats()
+                        self.app.root.update()  # Force FULL UI update
+                    except Exception as e:
+                        logger.warning(f"Failed to refresh stats: {e}")
+            
+            # NOW show success dialog (stats are already updated in background!)
             messagebox.showinfo(
                 "Record Saved",
                 f"Observation record for {record_data['species_name']} has been saved successfully!\n\n"

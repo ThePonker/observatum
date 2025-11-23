@@ -16,11 +16,16 @@ from pathlib import Path
 try:
     from tabs.base_tab import BaseTab
     from widgets.add_record_widget import AddRecordWidget
+    from tabs.stats_calculator import StatsCalculator
 except ImportError:
     import sys
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from tabs.base_tab import BaseTab
     from widgets.add_record_widget import AddRecordWidget
+    try:
+        from tabs.stats_calculator import StatsCalculator
+    except ImportError:
+        StatsCalculator = None
 
 
 class HomeTab(BaseTab):
@@ -91,29 +96,38 @@ class HomeTab(BaseTab):
         for i in range(4):
             stats_container.rowconfigure(i, weight=1, uniform="stats")
         
-        # Define the 8 statistics
-        stats = [
-            ("Total Records", "0", "🔢"),
-            ("This Year", "0", "📅"),
-            ("Last 7 Days", "0", "📊"),
-            ("Last Recorded", "N/A", "⭐"),
-            ("Total Species", "0", "🦋"),
-            ("This Month", "0", "📆"),
-            ("Last 30 Days", "0", "📈"),
-            ("Unique Sites", "0", "📍")
+        # Store references to stat labels for updating
+        self.stat_labels = {}
+        
+        # Define the 8 statistics with keys for updating
+        stats_config = [
+            ("total_records", "Total Records", "0", "🔢"),
+            ("this_year", "This Year", "0", "📅"),
+            ("last_7_days", "Last 7 Days", "0", "📊"),
+            ("last_recorded", "Last Recorded", "N/A", "⭐"),
+            ("total_species", "Total Species", "0", "🦋"),
+            ("this_month", "This Month", "0", "📆"),
+            ("last_30_days", "Last 30 Days", "0", "📈"),
+            ("unique_sites", "Unique Sites", "0", "📍")
         ]
         
         # Create stat boxes in 2 columns x 4 rows
-        for idx, (label, value, icon) in enumerate(stats):
+        for idx, (key, label, value, icon) in enumerate(stats_config):
             row = idx // 2  # Divide by 2 for row
             col = idx % 2   # Remainder for column
             
-            stat_box = self._create_stat_box(stats_container, label, value, icon)
+            stat_box, value_label = self._create_stat_box(stats_container, label, value, icon)
             stat_box.grid(row=row, column=col, sticky="nsew", padx=3, pady=3)
+            
+            # Store reference to value label for updating
+            self.stat_labels[key] = value_label
+        
+        # Load initial stats
+        self._update_stats()
             
         return stats_container
         
-    def _create_stat_box(self, parent, label: str, value: str, icon: str) -> ttk.Frame:
+    def _create_stat_box(self, parent, label: str, value: str, icon: str) -> tuple:
         """
         Create a single statistics box (compact version for 2-column layout)
         
@@ -124,7 +138,7 @@ class HomeTab(BaseTab):
             icon: Icon/emoji
             
         Returns:
-            Frame containing the stat box
+            Tuple of (box frame, value label) for updating
         """
         box = ttk.Frame(parent, relief=tk.RIDGE, borderwidth=2)
         box.columnconfigure(0, weight=1)
@@ -133,7 +147,7 @@ class HomeTab(BaseTab):
         icon_label = ttk.Label(box, text=icon, font=("Arial", 18))
         icon_label.grid(row=0, column=0, pady=(5, 2))
         
-        # Value (smaller size)
+        # Value (smaller size) - store reference
         value_label = ttk.Label(box, text=value, font=("Arial", 14, "bold"))
         value_label.grid(row=1, column=0, pady=2)
         
@@ -141,7 +155,7 @@ class HomeTab(BaseTab):
         label_text = ttk.Label(box, text=label, font=("Arial", 8))
         label_text.grid(row=2, column=0, pady=(2, 5))
         
-        return box
+        return box, value_label
         
     def _create_taxon_viewer_section(self, parent) -> ttk.Frame:
         """
@@ -302,9 +316,32 @@ class HomeTab(BaseTab):
         self.hierarchy_text.delete("1.0", tk.END)
         self.hierarchy_text.insert("1.0", text)
         self.hierarchy_text.config(state=tk.DISABLED)
+    
+    def _update_stats(self):
+        """Update statistics from database"""
+        if not StatsCalculator:
+            return  # Stats calculator not available
+        
+        try:
+            from database.db_manager import get_db_manager
+            db_manager = get_db_manager()
+            obs_conn = db_manager.get_observations_connection()
+            
+            # Get all stats
+            calculator = StatsCalculator(obs_conn)
+            stats = calculator.get_all_stats()
+            
+            # Update each stat label
+            for key, value in stats.items():
+                if key in self.stat_labels:
+                    self.stat_labels[key].config(text=value)
+            
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error updating stats: {e}")
         
     def refresh(self):
         """Refresh the home tab data"""
-        # TODO: Reload statistics from database
+        self._update_stats()
         # TODO: Refresh species list
         self.update_status("Home tab refreshed")
