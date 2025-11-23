@@ -9,6 +9,10 @@ Features:
 - Delete records (selected)
 - Export to CSV
 - Bulk operations
+- iRecord status tracking (NEW)
+- Verification status display (NEW)
+
+UPDATED: 23 November 2025 - Added iRecord integration columns
 """
 
 import tkinter as tk
@@ -84,10 +88,11 @@ class DataTab(BaseTab):
         hsb = ttk.Scrollbar(table_frame, orient="horizontal")
         hsb.grid(row=1, column=0, sticky="ew")
         
-        # Define columns
+        # Define columns - UPDATED: Added iRecord and Verification columns
         columns = (
             "ID", "Date", "Species", "Site", "Grid Ref", 
-            "Recorder", "Determiner", "Quantity", "Certainty"
+            "Recorder", "Determiner", "Quantity", "Certainty",
+            "iRecord", "Verification"  # NEW COLUMNS
         )
         
         self.tree = ttk.Treeview(
@@ -103,7 +108,7 @@ class DataTab(BaseTab):
         vsb.config(command=self.tree.yview)
         hsb.config(command=self.tree.xview)
         
-        # Configure columns
+        # Configure columns - UPDATED: Added new column configurations
         column_config = {
             "ID": (50, tk.CENTER),
             "Date": (100, tk.CENTER),
@@ -113,7 +118,9 @@ class DataTab(BaseTab):
             "Recorder": (120, tk.W),
             "Determiner": (120, tk.W),
             "Quantity": (70, tk.CENTER),
-            "Certainty": (80, tk.CENTER)
+            "Certainty": (80, tk.CENTER),
+            "iRecord": (70, tk.CENTER),      # NEW
+            "Verification": (120, tk.CENTER)  # NEW
         }
         
         for col in columns:
@@ -190,13 +197,14 @@ class DataTab(BaseTab):
             conn = db_manager.get_observations_connection()
             cursor = conn.cursor()
             
-            # Build query with filters
+            # Build query with filters - UPDATED: Include iRecord fields
             query = """
                 SELECT 
                     id, date, species_name, site_name, grid_reference,
                     recorder, determiner, quantity, certainty,
                     taxon_id, sex, sample_method, observation_type, sample_comment,
-                    created_at
+                    created_at,
+                    irecord_key, submitted_to_irecord, verification_status
                 FROM records
                 WHERE 1=1
             """
@@ -246,46 +254,59 @@ class DataTab(BaseTab):
             for item in self.tree.get_children():
                 self.tree.delete(item)
             
-            # Insert records
+            # Populate table - UPDATED: Include iRecord status
             for record in records:
-                # Format display values
-                record_id = record[0]
-                date = record[1]
-                species = record[2]
-                site = record[3]
-                gridref = record[4]
-                recorder = record[5]
-                determiner = record[6]
-                quantity = record[7] if record[7] else ""
-                certainty = record[8]
+                # Determine iRecord status icon
+                if record['irecord_key']:
+                    irecord_icon = "✓"  # In iRecord (has RecordKey)
+                elif record['submitted_to_irecord']:
+                    irecord_icon = "⏳"  # Submitted, pending sync
+                else:
+                    irecord_icon = "✗"  # Local only
                 
-                # Insert into tree
-                self.tree.insert("", "end", iid=str(record_id), values=(
-                    record_id, date, species, site, gridref,
-                    recorder, determiner, quantity, certainty
+                # Format verification status
+                status = record['verification_status'] if record['verification_status'] else 'Not reviewed'
+                if status == 'Accepted':
+                    verify_text = "✓ Accepted"
+                elif status == 'Plausible':
+                    verify_text = "~ Plausible"
+                elif status == 'Unable to verify':
+                    verify_text = "? Unable"
+                elif status == 'Incorrect':
+                    verify_text = "✗ Incorrect"
+                elif status == 'Not reviewed':
+                    verify_text = "- Not reviewed"
+                else:
+                    verify_text = status
+                
+                # Insert row
+                item_id = self.tree.insert('', 'end', iid=record['id'], values=(
+                    record['id'],
+                    record['date'],
+                    record['species_name'],
+                    record['site_name'],
+                    record['grid_reference'],
+                    record['recorder'],
+                    record['determiner'],
+                    record['quantity'] if record['quantity'] else '',
+                    record['certainty'],
+                    irecord_icon,     # NEW COLUMN
+                    verify_text       # NEW COLUMN
                 ))
-                
-                # Store full record data as tag for editing
             
             # Update count
-            self.count_label.config(text=f"{len(records):,} record{'s' if len(records) != 1 else ''}")
+            count = len(records)
+            self.count_label.config(text=f"{count:,} record{'s' if count != 1 else ''}")
             
-            # Update filter panel if available
-            if self.filter_panel:
-                # Get unique values for filter dropdowns
-                cursor.execute("SELECT DISTINCT species_name FROM records ORDER BY species_name")
-                species_list = [row[0] for row in cursor.fetchall()]
-                
-                cursor.execute("SELECT DISTINCT site_name FROM records ORDER BY site_name")
-                site_list = [row[0] for row in cursor.fetchall()]
-                
-                cursor.execute("SELECT DISTINCT recorder FROM records ORDER BY recorder")
-                recorder_list = [row[0] for row in cursor.fetchall()]
-                
+            # Update filter options if filter panel exists
+            if self.filter_panel and records:
+                species_list = sorted(set(r['species_name'] for r in records))
+                site_list = sorted(set(r['site_name'] for r in records))
+                recorder_list = sorted(set(r['recorder'] for r in records))
                 self.filter_panel.update_filter_options(species_list, site_list, recorder_list)
-                self.filter_panel.update_count(len(records))
+                self.filter_panel.update_count(count)
             
-            self.update_status(f"Loaded {len(records):,} records")
+            logger.info(f"Loaded {count} records")
             
         except Exception as e:
             logger.error(f"Error loading records: {e}")
@@ -293,7 +314,7 @@ class DataTab(BaseTab):
     
     def _on_filter_changed(self, filters: dict):
         """
-        Called when filter values change
+        Handle filter changes
         
         Args:
             filters: Dictionary of filter values
@@ -302,7 +323,7 @@ class DataTab(BaseTab):
     
     def _sort_column(self, col: str):
         """
-        Sort table by column
+        Sort treeview by column
         
         Args:
             col: Column name to sort by
@@ -310,22 +331,23 @@ class DataTab(BaseTab):
         # Get all items
         items = [(self.tree.set(item, col), item) for item in self.tree.get_children('')]
         
-        # Determine sort order (toggle)
-        if not hasattr(self, '_sort_reverse'):
-            self._sort_reverse = {}
+        # Determine sort direction (toggle)
+        if hasattr(self, '_last_sort_col') and self._last_sort_col == col:
+            self._sort_reverse = not getattr(self, '_sort_reverse', False)
+        else:
+            self._sort_reverse = False
         
-        reverse = self._sort_reverse.get(col, False)
-        self._sort_reverse[col] = not reverse
+        self._last_sort_col = col
         
         # Sort items
         try:
             # Try numeric sort first
-            items.sort(key=lambda x: (int(x[0]) if x[0].isdigit() else x[0]), reverse=reverse)
-        except:
+            items.sort(key=lambda x: int(x[0]) if x[0] else 0, reverse=self._sort_reverse)
+        except (ValueError, TypeError):
             # Fall back to string sort
-            items.sort(reverse=reverse)
+            items.sort(key=lambda x: x[0].lower() if x[0] else '', reverse=self._sort_reverse)
         
-        # Rearrange items in sorted order
+        # Rearrange items in tree
         for index, (val, item) in enumerate(items):
             self.tree.move(item, '', index)
     

@@ -1,37 +1,41 @@
 """
 Add Record Widget for Observatum
-Embedded form for adding single observation records
+Comprehensive data entry form for adding new observation records
 
-This widget replaces the placeholder in the Home tab and provides
-a complete data entry form for observations with UKSI integration.
+This widget provides a complete form for entering species observations
+with UKSI species search, UK grid reference validation, and auto-save
+of default values from settings.
+
+UPDATED: 23 November 2025 - Added UUID generation for iRecord integration
 """
 
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
-from pathlib import Path
-import sys
+from typing import Optional, Dict
 import logging
+import json
+from pathlib import Path
+import uuid  # ADDED: For UUID generation
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-# Import UKSI handler
+from database.db_manager import get_db_manager
 from database.uksi_handler import UKSIHandler
-
-# Import validators
-try:
-    from utils.validators import GridReferenceValidator, validate_all_record_fields
-except ImportError:
-    # Fallback if validators not yet in utils
-    GridReferenceValidator = None
-    validate_all_record_fields = None
+from utils.validators import GridReferenceValidator, validate_all_record_fields
 
 logger = logging.getLogger(__name__)
 
 
 class AddRecordWidget(ttk.LabelFrame):
-    """Widget for adding single observation records"""
+    """
+    Widget for adding a single observation record
+    
+    Features:
+    - Species autocomplete with UKSI integration
+    - UK grid reference validation
+    - Required field indicators
+    - Settings integration for default values
+    - Real-time validation feedback
+    """
     
     def __init__(self, parent, app_instance, **kwargs):
         """
@@ -41,517 +45,406 @@ class AddRecordWidget(ttk.LabelFrame):
             parent: Parent widget
             app_instance: Reference to main application
         """
-        super().__init__(parent, text="Add Single Record", padding="10", **kwargs)
+        super().__init__(parent, text="Add Single Record", padding="15", **kwargs)
+        
+        self.parent = parent
         self.app = app_instance
-        self.settings = self._load_settings()
         
-        # Initialize UKSI handler
-        uksi_db_path = Path(__file__).parent.parent / 'database' / 'uksi.db'
-        try:
-            self.uksi = UKSIHandler(uksi_db_path)
-            logger.info("UKSI handler initialized successfully")
-        except FileNotFoundError as e:
-            logger.error(f"UKSI database not found: {e}")
-            self.uksi = None
-            messagebox.showwarning(
-                "UKSI Database Missing",
-                "The UKSI species database (uksi.db) was not found.\n\n"
-                "Please run 'uksi_extractor.py' to generate the database.\n\n"
-                "Species search will not be available."
-            )
-        
-        # Track selected species details
+        # Species autocomplete data
+        self.species_results = []
         self.selected_species = None
         self.autocomplete_window = None
         
-        # Configure grid
-        self.columnconfigure(0, weight=0)  # Labels
-        self.columnconfigure(1, weight=1)  # Entry fields
+        # Load settings
+        self.settings = self._load_settings()
         
+        # Create the form
         self._create_form()
-    
-    def _get_observations_db(self):
-        """
-        Get observations database connection for smart ranking.
         
-        Returns:
-            SQLite connection or None if not available
-        """
-        try:
-            from database.db_manager import get_db_manager
-            db_manager = get_db_manager()
-            return db_manager.get_observations_connection()
-        except Exception as e:
-            logger.warning(f"Could not get observations database: {e}")
-            return None
+        # Apply default values from settings
+        self._apply_defaults()
         
-    def _load_settings(self):
-        """Load settings from JSON file"""
-        import json
+    def _load_settings(self) -> Dict:
+        """Load settings from config file"""
         config_file = Path(__file__).parent.parent / 'data' / 'config.json'
-        
         if config_file.exists():
             try:
                 with open(config_file, 'r') as f:
                     return json.load(f)
-            except:
-                return {}
+            except Exception as e:
+                logger.error(f"Error loading settings: {e}")
         return {}
-        
+    
     def _create_form(self):
         """Create the data entry form"""
+        # Configure grid
+        self.columnconfigure(1, weight=1)
+        
         row = 0
         
-        # Species Search* (Mandatory)
+        # Species Search* (Required)
         ttk.Label(self, text="Species Search:*", foreground="red").grid(
-            row=row, column=0, sticky="w", pady=3
+            row=row, column=0, sticky="w", pady=5
         )
-        self.species_var = tk.StringVar()
+        
         species_frame = ttk.Frame(self)
-        species_frame.grid(row=row, column=1, sticky="ew", pady=3)
+        species_frame.grid(row=row, column=1, sticky="ew", pady=5)
         species_frame.columnconfigure(0, weight=1)
+        
+        self.species_var = tk.StringVar()
+        self.species_var.trace('w', self._on_species_search)
         
         self.species_entry = ttk.Entry(species_frame, textvariable=self.species_var)
         self.species_entry.grid(row=0, column=0, sticky="ew", padx=(0, 5))
+        self.species_entry.bind('<Return>', lambda e: self._select_first_result())
+        self.species_entry.bind('<Down>', lambda e: self._show_autocomplete())
         
-        # Bind key release for autocomplete with debouncing
-        self.species_entry.bind('<KeyRelease>', self._on_species_key_release)
-        self.species_entry.bind('<FocusOut>', self._on_species_focus_out)
+        # Species status label
+        self.species_status = ttk.Label(species_frame, text="", foreground="gray")
+        self.species_status.grid(row=0, column=1)
         
-        # Debounce timer for autocomplete
-        self._autocomplete_timer = None
-        
-        ttk.Button(
-            species_frame,
-            text="Search",
-            command=self._search_species,
-            width=8
-        ).grid(row=0, column=1)
         row += 1
         
-        # Site Name* (Mandatory)
+        # Site Name* (Required)
         ttk.Label(self, text="Site Name:*", foreground="red").grid(
-            row=row, column=0, sticky="w", pady=3
+            row=row, column=0, sticky="w", pady=5
         )
         self.site_var = tk.StringVar()
-        self.site_entry = ttk.Entry(self, textvariable=self.site_var)
-        self.site_entry.grid(row=row, column=1, sticky="ew", pady=3)
+        site_entry = ttk.Entry(self, textvariable=self.site_var)
+        site_entry.grid(row=row, column=1, sticky="ew", pady=5)
+        
         row += 1
         
-        # Grid Ref* (Mandatory)
-        ttk.Label(self, text="Grid Ref:*", foreground="red").grid(
-            row=row, column=0, sticky="w", pady=3
+        # Grid Reference* (Required)
+        ttk.Label(self, text="Grid Reference:*", foreground="red").grid(
+            row=row, column=0, sticky="w", pady=5
         )
+        
         gridref_frame = ttk.Frame(self)
-        gridref_frame.grid(row=row, column=1, sticky="ew", pady=3)
+        gridref_frame.grid(row=row, column=1, sticky="ew", pady=5)
         gridref_frame.columnconfigure(0, weight=1)
         
         self.gridref_var = tk.StringVar()
-        self.gridref_var.trace('w', self._validate_gridref)
-        self.gridref_entry = ttk.Entry(gridref_frame, textvariable=self.gridref_var)
-        self.gridref_entry.grid(row=0, column=0, sticky="ew", padx=(0, 5))
+        self.gridref_var.trace('w', self._on_gridref_change)
         
-        # Validation indicator
-        self.gridref_status = ttk.Label(gridref_frame, text="", foreground="gray", width=3)
+        gridref_entry = ttk.Entry(gridref_frame, textvariable=self.gridref_var)
+        gridref_entry.grid(row=0, column=0, sticky="ew", padx=(0, 5))
+        
+        # Grid ref validation status
+        self.gridref_status = ttk.Label(gridref_frame, text="", foreground="gray")
         self.gridref_status.grid(row=0, column=1)
+        
         row += 1
         
-        # Date* (Mandatory)
+        # Date* (Required)
         ttk.Label(self, text="Date:*", foreground="red").grid(
-            row=row, column=0, sticky="w", pady=3
+            row=row, column=0, sticky="w", pady=5
         )
+        
+        date_frame = ttk.Frame(self)
+        date_frame.grid(row=row, column=1, sticky="ew", pady=5)
+        date_frame.columnconfigure(0, weight=1)
+        
         self.date_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d"))
-        self.date_entry = ttk.Entry(self, textvariable=self.date_var)
-        self.date_entry.grid(row=row, column=1, sticky="ew", pady=3)
+        date_entry = ttk.Entry(date_frame, textvariable=self.date_var, width=12)
+        date_entry.grid(row=0, column=0, sticky="w", padx=(0, 10))
+        
+        ttk.Label(date_frame, text="(YYYY-MM-DD)", foreground="gray").grid(
+            row=0, column=1, sticky="w"
+        )
+        
+        ttk.Button(date_frame, text="Today", command=self._set_today, width=8).grid(
+            row=0, column=2, padx=(10, 0)
+        )
+        
         row += 1
         
-        # Recorder* (Mandatory - can be pre-filled from settings)
+        # Recorder* (Required)
         ttk.Label(self, text="Recorder:*", foreground="red").grid(
-            row=row, column=0, sticky="w", pady=3
+            row=row, column=0, sticky="w", pady=5
         )
-        default_recorder = self.settings.get('default_recorder', '')
-        self.recorder_var = tk.StringVar(value=default_recorder)
-        self.recorder_entry = ttk.Entry(self, textvariable=self.recorder_var)
-        self.recorder_entry.grid(row=row, column=1, sticky="ew", pady=3)
+        self.recorder_var = tk.StringVar()
+        recorder_entry = ttk.Entry(self, textvariable=self.recorder_var)
+        recorder_entry.grid(row=row, column=1, sticky="ew", pady=5)
+        
         row += 1
         
-        # Determiner* (Mandatory - can be pre-filled from settings)
+        # Determiner* (Required)
         ttk.Label(self, text="Determiner:*", foreground="red").grid(
-            row=row, column=0, sticky="w", pady=3
+            row=row, column=0, sticky="w", pady=5
         )
-        default_determiner = self.settings.get('default_determiner', '')
-        self.determiner_var = tk.StringVar(value=default_determiner)
-        self.determiner_entry = ttk.Entry(self, textvariable=self.determiner_var)
-        self.determiner_entry.grid(row=row, column=1, sticky="ew", pady=3)
+        self.determiner_var = tk.StringVar()
+        determiner_entry = ttk.Entry(self, textvariable=self.determiner_var)
+        determiner_entry.grid(row=row, column=1, sticky="ew", pady=5)
+        
         row += 1
         
-        # Certainty* (Mandatory - can be pre-filled from settings)
+        # Certainty* (Required)
         ttk.Label(self, text="Certainty:*", foreground="red").grid(
-            row=row, column=0, sticky="w", pady=3
+            row=row, column=0, sticky="w", pady=5
         )
-        default_certainty = self.settings.get('default_certainty', 'Certain')
-        self.certainty_var = tk.StringVar(value=default_certainty)
+        self.certainty_var = tk.StringVar(value="Certain")
         certainty_combo = ttk.Combobox(
             self,
             textvariable=self.certainty_var,
-            values=['Certain', 'Likely', 'Uncertain'],
-            state='readonly',
-            width=18
+            values=["Certain", "Likely", "Uncertain"],
+            state="readonly",
+            width=15
         )
-        certainty_combo.grid(row=row, column=1, sticky="w", pady=3)
+        certainty_combo.grid(row=row, column=1, sticky="w", pady=5)
+        
         row += 1
         
-        # Separator
+        # === OPTIONAL FIELDS ===
         ttk.Separator(self, orient='horizontal').grid(
-            row=row, column=0, columnspan=2, sticky="ew", pady=5
+            row=row, column=0, columnspan=2, sticky="ew", pady=10
         )
+        
         row += 1
         
         # Sex (Optional)
-        ttk.Label(self, text="Sex:").grid(
-            row=row, column=0, sticky="w", pady=3
-        )
+        ttk.Label(self, text="Sex:").grid(row=row, column=0, sticky="w", pady=5)
         self.sex_var = tk.StringVar()
         sex_combo = ttk.Combobox(
             self,
             textvariable=self.sex_var,
-            values=['', 'Male', 'Female', 'Unknown'],
-            state='readonly',
-            width=18
+            values=["", "Male", "Female", "Unknown"],
+            state="readonly",
+            width=15
         )
-        sex_combo.grid(row=row, column=1, sticky="w", pady=3)
+        sex_combo.grid(row=row, column=1, sticky="w", pady=5)
+        
         row += 1
         
         # Quantity (Optional)
-        ttk.Label(self, text="Quantity:").grid(
-            row=row, column=0, sticky="w", pady=3
-        )
+        ttk.Label(self, text="Quantity:").grid(row=row, column=0, sticky="w", pady=5)
         self.quantity_var = tk.StringVar()
-        self.quantity_entry = ttk.Entry(self, textvariable=self.quantity_var, width=20)
-        self.quantity_entry.grid(row=row, column=1, sticky="w", pady=3)
+        quantity_entry = ttk.Entry(self, textvariable=self.quantity_var, width=10)
+        quantity_entry.grid(row=row, column=1, sticky="w", pady=5)
+        
         row += 1
         
-        # Sample Method (Optional - can be pre-filled from settings)
-        ttk.Label(self, text="Sample Method:").grid(
-            row=row, column=0, sticky="w", pady=3
-        )
-        default_method = self.settings.get('default_sample_method', '')
-        self.sample_method_var = tk.StringVar(value=default_method)
-        self.sample_method_entry = ttk.Entry(self, textvariable=self.sample_method_var)
-        self.sample_method_entry.grid(row=row, column=1, sticky="ew", pady=3)
+        # Sample Method (Optional)
+        ttk.Label(self, text="Sample Method:").grid(row=row, column=0, sticky="w", pady=5)
+        self.sample_method_var = tk.StringVar()
+        method_entry = ttk.Entry(self, textvariable=self.sample_method_var)
+        method_entry.grid(row=row, column=1, sticky="ew", pady=5)
+        
         row += 1
         
-        # Observation Type (Optional - can be pre-filled from settings)
-        ttk.Label(self, text="Observation Type:").grid(
-            row=row, column=0, sticky="w", pady=3
-        )
-        default_obs_type = self.settings.get('default_observation_type', '')
-        self.obs_type_var = tk.StringVar(value=default_obs_type)
-        self.obs_type_entry = ttk.Entry(self, textvariable=self.obs_type_var)
-        self.obs_type_entry.grid(row=row, column=1, sticky="ew", pady=3)
+        # Observation Type (Optional)
+        ttk.Label(self, text="Observation Type:").grid(row=row, column=0, sticky="w", pady=5)
+        self.obs_type_var = tk.StringVar()
+        obs_type_entry = ttk.Entry(self, textvariable=self.obs_type_var)
+        obs_type_entry.grid(row=row, column=1, sticky="ew", pady=5)
+        
         row += 1
         
         # Sample Comment (Optional)
-        ttk.Label(self, text="Sample Comment:").grid(
-            row=row, column=0, sticky="nw", pady=3
-        )
-        self.comment_text = tk.Text(self, height=3, width=30, wrap=tk.WORD)
-        self.comment_text.grid(row=row, column=1, sticky="ew", pady=3)
+        ttk.Label(self, text="Sample Comment:").grid(row=row, column=0, sticky="nw", pady=5)
+        
+        comment_frame = ttk.Frame(self)
+        comment_frame.grid(row=row, column=1, sticky="ew", pady=5)
+        comment_frame.columnconfigure(0, weight=1)
+        
+        self.comment_text = tk.Text(comment_frame, height=4, width=40, wrap=tk.WORD)
+        self.comment_text.grid(row=0, column=0, sticky="ew")
+        
+        comment_scroll = ttk.Scrollbar(comment_frame, command=self.comment_text.yview)
+        comment_scroll.grid(row=0, column=1, sticky="ns")
+        self.comment_text.config(yscrollcommand=comment_scroll.set)
+        
         row += 1
         
         # Buttons
         button_frame = ttk.Frame(self)
-        button_frame.grid(row=row, column=0, columnspan=2, sticky="ew", pady=(10, 0))
+        button_frame.grid(row=row, column=0, columnspan=2, sticky="ew", pady=(15, 0))
+        
+        self.submit_btn = ttk.Button(
+            button_frame,
+            text="Submit Record",
+            command=self._save_record,
+            style='Accent.TButton'
+        )
+        self.submit_btn.pack(side=tk.RIGHT, padx=(5, 0))
         
         ttk.Button(
             button_frame,
-            text="Cancel",
+            text="Clear Form",
             command=self._clear_form
-        ).pack(side=tk.LEFT, padx=(0, 5))
+        ).pack(side=tk.RIGHT)
         
-        ttk.Button(
+        # Required fields note
+        ttk.Label(
             button_frame,
-            text="Submit",
-            command=self._submit_record
+            text="* Required fields",
+            foreground="red",
+            font=("TkDefaultFont", 8)
         ).pack(side=tk.LEFT)
-        
-    def _on_species_key_release(self, event):
-        """Handle key release in species entry for autocomplete with debouncing"""
-        # Ignore navigation keys
-        if event.keysym in ('Up', 'Down', 'Left', 'Right', 'Return', 'Escape'):
-            return
-        
-        # Cancel any pending search
-        if self._autocomplete_timer:
-            self.after_cancel(self._autocomplete_timer)
-        
-        search_term = self.species_var.get().strip()
-        
-        # Close autocomplete if search term is too short
-        if len(search_term) < 2:
-            self._close_autocomplete()
-            return
-        
-        # Debounce: wait 250ms after user stops typing before searching
-        if self.uksi:
-            self._autocomplete_timer = self.after(250, lambda: self._show_autocomplete(search_term))
     
-    def _validate_gridref(self, *args):
-        """Validate grid reference as user types"""
-        if not GridReferenceValidator:
-            return  # Validator not available
+    def _apply_defaults(self):
+        """Apply default values from settings"""
+        if self.settings.get('default_recorder'):
+            self.recorder_var.set(self.settings['default_recorder'])
         
+        if self.settings.get('default_determiner'):
+            self.determiner_var.set(self.settings['default_determiner'])
+        
+        if self.settings.get('default_certainty'):
+            self.certainty_var.set(self.settings['default_certainty'])
+        
+        if self.settings.get('default_sample_method'):
+            self.sample_method_var.set(self.settings['default_sample_method'])
+        
+        if self.settings.get('default_observation_type'):
+            self.obs_type_var.set(self.settings['default_observation_type'])
+    
+    def _set_today(self):
+        """Set date to today"""
+        self.date_var.set(datetime.now().strftime("%Y-%m-%d"))
+    
+    def _on_species_search(self, *args):
+        """Handle species search text change"""
+        search_term = self.species_var.get()
+        
+        # Clear selected species when user types
+        self.selected_species = None
+        
+        if len(search_term) < 2:
+            self.species_status.config(text="", foreground="gray")
+            self._hide_autocomplete()
+            return
+        
+        # Show "Searching..." status
+        self.species_status.config(text="🔍", foreground="blue")
+        
+        # Perform search
+        try:
+            db_manager = get_db_manager()
+            uksi_db_path = db_manager.db_dir / 'uksi.db'
+            
+            if not uksi_db_path.exists():
+                self.species_status.config(text="❌ UKSI DB missing", foreground="red")
+                return
+            
+            # Get observations connection for smart ranking
+            obs_conn = db_manager.get_observations_connection()
+            
+            with UKSIHandler(uksi_db_path) as uksi:
+                # Search with smart ranking (prioritizes user's species)
+                self.species_results = uksi.search_species(search_term, limit=10, obs_db_conn=obs_conn)
+            
+            if self.species_results:
+                self.species_status.config(text=f"✓ {len(self.species_results)}", foreground="green")
+                self._show_autocomplete()
+            else:
+                self.species_status.config(text="❌ No matches", foreground="orange")
+                self._hide_autocomplete()
+        
+        except Exception as e:
+            logger.error(f"Species search error: {e}")
+            self.species_status.config(text="❌ Search error", foreground="red")
+    
+    def _show_autocomplete(self):
+        """Show autocomplete dropdown"""
+        if not self.species_results:
+            return
+        
+        # Destroy existing window
+        self._hide_autocomplete()
+        
+        # Create new autocomplete window
+        self.autocomplete_window = tk.Toplevel(self)
+        self.autocomplete_window.wm_overrideredirect(True)
+        
+        # Position below species entry
+        x = self.species_entry.winfo_rootx()
+        y = self.species_entry.winfo_rooty() + self.species_entry.winfo_height()
+        width = self.species_entry.winfo_width()
+        
+        self.autocomplete_window.geometry(f"{width}x200+{x}+{y}")
+        
+        # Create listbox
+        listbox_frame = ttk.Frame(self.autocomplete_window)
+        listbox_frame.pack(fill=tk.BOTH, expand=True)
+        
+        scrollbar = ttk.Scrollbar(listbox_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.autocomplete_listbox = tk.Listbox(
+            listbox_frame,
+            yscrollcommand=scrollbar.set,
+            height=10
+        )
+        self.autocomplete_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=self.autocomplete_listbox.yview)
+        
+        # Populate listbox
+        for species in self.species_results:
+            display_text = species['scientific_name']
+            if species.get('common_names'):
+                display_text += f" ({species['common_names']})"
+            self.autocomplete_listbox.insert(tk.END, display_text)
+        
+        # Bind selection
+        self.autocomplete_listbox.bind('<<ListboxSelect>>', self._on_species_select)
+        self.autocomplete_listbox.bind('<Return>', self._on_species_select)
+        
+        # Bind focus loss
+        self.autocomplete_window.bind('<FocusOut>', lambda e: self._hide_autocomplete())
+    
+    def _hide_autocomplete(self):
+        """Hide autocomplete dropdown"""
+        if self.autocomplete_window:
+            self.autocomplete_window.destroy()
+            self.autocomplete_window = None
+    
+    def _select_first_result(self):
+        """Select first autocomplete result"""
+        if self.species_results:
+            self.selected_species = self.species_results[0]
+            self.species_var.set(self.selected_species['scientific_name'])
+            self.species_status.config(text="✓", foreground="green")
+            self._hide_autocomplete()
+    
+    def _on_species_select(self, event):
+        """Handle species selection from autocomplete"""
+        if not self.autocomplete_listbox.curselection():
+            return
+        
+        index = self.autocomplete_listbox.curselection()[0]
+        self.selected_species = self.species_results[index]
+        
+        # Update entry
+        self.species_var.set(self.selected_species['scientific_name'])
+        self.species_status.config(text="✓", foreground="green")
+        
+        self._hide_autocomplete()
+    
+    def _on_gridref_change(self, *args):
+        """Validate grid reference as user types"""
         gridref = self.gridref_var.get().strip()
+        
         if not gridref:
             self.gridref_status.config(text="", foreground="gray")
             return
         
         is_valid, error = GridReferenceValidator.validate(gridref)
+        
         if is_valid:
             self.gridref_status.config(text="✓", foreground="green")
         else:
             self.gridref_status.config(text="✗", foreground="red")
     
-    def _on_species_focus_out(self, event):
-        """Handle focus out - delay closing autocomplete to allow selection"""
-        self.after(200, self._close_autocomplete)
-    
-    def _show_autocomplete(self, search_term):
-        """Show autocomplete dropdown with search results"""
-        if not self.uksi:
-            return
-        
-        # Search UKSI database with smart ranking
-        obs_db = self._get_observations_db()
-        results = self.uksi.search_species(search_term, limit=8, obs_db_conn=obs_db)
-        
-        if not results:
-            self._close_autocomplete()
-            return
-        
-        # Create or update autocomplete window
-        if self.autocomplete_window:
-            self._close_autocomplete()
-        
-        # Create toplevel window
-        self.autocomplete_window = tk.Toplevel(self)
-        self.autocomplete_window.wm_overrideredirect(True)
-        
-        # Position below entry widget
-        x = self.species_entry.winfo_rootx()
-        y = self.species_entry.winfo_rooty() + self.species_entry.winfo_height()
-        self.autocomplete_window.wm_geometry(f"+{x}+{y}")
-        
-        # Create Text widget (allows mixed fonts) instead of Listbox
-        text_widget = tk.Text(
-            self.autocomplete_window,
-            width=self.species_entry.winfo_width() // 7,
-            height=min(len(results), 10),
-            font=('TkDefaultFont', 9),
-            cursor="hand2",
-            wrap=tk.NONE
-        )
-        text_widget.pack()
-        
-        # Configure tags for formatting
-        text_widget.tag_configure("scientific", font=('TkDefaultFont', 9, 'italic'))
-        text_widget.tag_configure("common", font=('TkDefaultFont', 9, 'bold'))
-        
-        # Populate with formatted species names
-        line_to_species = {}  # Map line number to species data
-        for idx, species in enumerate(results):
-            scientific = species['scientific_name']
-            common_names = species.get('common_names')
-            
-            # Insert scientific name in italic
-            text_widget.insert(tk.END, scientific, "scientific")
-            
-            # Insert common names in regular font (if available)
-            if common_names:
-                text_widget.insert(tk.END, f" {common_names}", "common")
-            
-            text_widget.insert(tk.END, "\n")
-            line_to_species[idx + 1] = species  # Lines are 1-indexed
-        
-        # Make text read-only
-        text_widget.config(state=tk.DISABLED)
-        
-        # Bind click to select species
-        def on_click(event):
-            # Get clicked line
-            index = text_widget.index(f"@{event.x},{event.y}")
-            line = int(index.split('.')[0])
-            
-            if line in line_to_species:
-                selected = line_to_species[line]
-                self._select_species(selected)
-                self._close_autocomplete()
-        
-        text_widget.bind('<Button-1>', on_click)
-        
-        # Store results for selection
-        self.autocomplete_results = results
-    
-    def _close_autocomplete(self):
-        """Close autocomplete window if open"""
-        if self.autocomplete_window:
-            self.autocomplete_window.destroy()
-            self.autocomplete_window = None
-            self.autocomplete_results = None
-    
-    def _select_species(self, species):
-        """Handle species selection from autocomplete"""
-        # Set species name with common names
-        display_text = self.uksi.format_species_display(species, include_common=True)
-        self.species_var.set(display_text)
-        
-        # Store full species details
-        self.selected_species = species
-        
-        logger.info(f"Selected species: {species['scientific_name']} (TVK: {species['tvk']}), Common: {species.get('common_names', 'None')}")
-    
-    def _search_species(self):
-        """Handle Search button click - show detailed search dialog"""
-        search_term = self.species_var.get().strip()
-        
-        if not search_term:
-            messagebox.showwarning(
-                "Search Required",
-                "Please enter a species name to search."
-            )
-            return
-        
-        if not self.uksi:
-            messagebox.showerror(
-                "UKSI Unavailable",
-                "UKSI database is not available.\n\n"
-                "Please run uksi_extractor.py to generate the database."
-            )
-            return
-        
-        # Perform search with smart ranking
-        obs_db = self._get_observations_db()
-        results = self.uksi.search_species(search_term, limit=20, obs_db_conn=obs_db)
-        
-        if not results:
-            messagebox.showinfo(
-                "No Results",
-                f"No species found matching '{search_term}'.\n\n"
-                "Try:\n"
-                "- Checking spelling\n"
-                "- Using scientific name\n"
-                "- Using common name\n"
-                "- Searching for genus only"
-            )
-            return
-        
-        # Show results in dialog
-        self._show_search_results_dialog(results)
-    
-    def _show_search_results_dialog(self, results):
-        """Show search results in a selection dialog"""
-        # Create dialog window
-        dialog = tk.Toplevel(self)
-        dialog.title("Species Search Results")
-        dialog.geometry("600x400")
-        dialog.transient(self)
-        dialog.grab_set()
-        
-        # Title
-        ttk.Label(
-            dialog,
-            text=f"Found {len(results)} species:",
-            font=('TkDefaultFont', 10, 'bold')
-        ).pack(pady=10)
-        
-        # Create listbox with scrollbar
-        frame = ttk.Frame(dialog)
-        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-        
-        scrollbar = ttk.Scrollbar(frame)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        listbox = tk.Listbox(
-            frame, 
-            yscrollcommand=scrollbar.set, 
-            font=('TkDefaultFont', 9, 'italic')  # Italic for scientific names
-        )
-        listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.config(command=listbox.yview)
-        
-        # Populate listbox with scientific names + common names
-        for species in results:
-            display_text = self.uksi.format_species_display(species, include_common=True)
-            listbox.insert(tk.END, display_text)
-        
-        # Buttons
-        button_frame = ttk.Frame(dialog)
-        button_frame.pack(pady=10)
-        
-        def on_select():
-            if listbox.curselection():
-                index = listbox.curselection()[0]
-                selected = results[index]
-                self._select_species(selected)
-                dialog.destroy()
-        
-        ttk.Button(button_frame, text="Select", command=on_select, width=10).pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="Cancel", command=dialog.destroy, width=10).pack(side=tk.LEFT, padx=5)
-        
-        # Double-click to select
-        listbox.bind('<Double-Button-1>', lambda e: on_select())
-        
-    def _validate_form(self):
-        """
-        Validate that all mandatory fields are filled
-        
-        Returns:
-            tuple: (is_valid, error_message)
-        """
-        errors = []
-        
-        if not self.species_var.get().strip():
-            errors.append("Species Search")
-        if not self.site_var.get().strip():
-            errors.append("Site Name")
-        if not self.gridref_var.get().strip():
-            errors.append("Grid Ref")
-        if not self.date_var.get().strip():
-            errors.append("Date")
-        if not self.recorder_var.get().strip():
-            errors.append("Recorder")
-        if not self.determiner_var.get().strip():
-            errors.append("Determiner")
-        if not self.certainty_var.get().strip():
-            errors.append("Certainty")
-            
-        if errors:
-            return False, "The following mandatory fields are missing:\n\n• " + "\n• ".join(errors)
-            
-        return True, ""
-        
-    def _submit_record(self):
-        """Submit the record to the database"""
-        # Validate form
-        is_valid, error_msg = self._validate_form()
-        
-        if not is_valid:
-            messagebox.showerror("Validation Error", error_msg)
-            return
-        
-        # Check if a valid species was selected (with TVK)
-        if not self.selected_species or 'tvk' not in self.selected_species:
-            messagebox.showerror(
-                "Species Not Selected",
-                "Please select a species from the dropdown or search results.\n\n"
-                "The species must have a valid UKSI identifier (TVK) to be recorded."
-            )
-            return
-            
-        # Collect form data
-        record_data = {
-            'species_name': self.selected_species['scientific_name'],
-            'taxon_id': self.selected_species['tvk'],  # TVK for smart ranking!
+    def _save_record(self):
+        """Save the record to database"""
+        # Collect data
+        record = {
+            'uuid': str(uuid.uuid4()),  # ADDED: Generate UUID for iRecord integration
+            'species_name': self.selected_species.get('scientific_name') if self.selected_species else self.species_var.get().strip(),
+            'taxon_id': self.selected_species.get('tvk') if self.selected_species else None,
+            'common_name': self.selected_species.get('common_names') if self.selected_species else None,
+            'taxon_version_key': self.selected_species.get('tvk') if self.selected_species else None,
             'site_name': self.site_var.get().strip(),
             'grid_reference': self.gridref_var.get().strip(),
             'date': self.date_var.get().strip(),
@@ -559,63 +452,88 @@ class AddRecordWidget(ttk.LabelFrame):
             'determiner': self.determiner_var.get().strip(),
             'certainty': self.certainty_var.get(),
             'sex': self.sex_var.get() if self.sex_var.get() else None,
-            'quantity': int(self.quantity_var.get()) if self.quantity_var.get().strip().isdigit() else None,
+            'quantity': int(self.quantity_var.get()) if self.quantity_var.get().strip() else None,
             'sample_method': self.sample_method_var.get().strip() if self.sample_method_var.get().strip() else None,
             'observation_type': self.obs_type_var.get().strip() if self.obs_type_var.get().strip() else None,
             'sample_comment': self.comment_text.get("1.0", tk.END).strip() if self.comment_text.get("1.0", tk.END).strip() else None
         }
         
+        # Validate
+        is_valid, errors = validate_all_record_fields(record)
+        
+        if not is_valid:
+            messagebox.showerror(
+                "Validation Error",
+                "Please correct the following errors:\n\n• " + "\n• ".join(errors)
+            )
+            return
+        
+        # Additional validation: must have species selected from UKSI
+        if not self.selected_species:
+            response = messagebox.askyesno(
+                "Species Not Selected",
+                f"The species '{self.species_var.get()}' was not selected from UKSI.\n\n"
+                "This means it may not have a valid Taxon Version Key (TVK).\n\n"
+                "Continue anyway?"
+            )
+            if not response:
+                return
+        
         # Save to database
         try:
-            from database.db_manager import get_db_manager
             db_manager = get_db_manager()
             obs_conn = db_manager.get_observations_connection()
             cursor = obs_conn.cursor()
             
             cursor.execute("""
                 INSERT INTO records (
-                    species_name, taxon_id, site_name, grid_reference, date,
-                    recorder, determiner, certainty, sex, quantity,
-                    sample_method, observation_type, sample_comment
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    uuid, species_name, taxon_id, common_name, taxon_version_key,
+                    site_name, grid_reference, date,
+                    recorder, determiner, certainty,
+                    sex, quantity, sample_method, observation_type, sample_comment,
+                    created_at, modified_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                record_data['species_name'],
-                record_data['taxon_id'],
-                record_data['site_name'],
-                record_data['grid_reference'],
-                record_data['date'],
-                record_data['recorder'],
-                record_data['determiner'],
-                record_data['certainty'],
-                record_data['sex'],
-                record_data['quantity'],
-                record_data['sample_method'],
-                record_data['observation_type'],
-                record_data['sample_comment']
+                record['uuid'],  # ADDED: UUID now included in insert
+                record['species_name'],
+                record['taxon_id'],
+                record['common_name'],
+                record['taxon_version_key'],
+                record['site_name'],
+                record['grid_reference'],
+                record['date'],
+                record['recorder'],
+                record['determiner'],
+                record['certainty'],
+                record['sex'],
+                record['quantity'],
+                record['sample_method'],
+                record['observation_type'],
+                record['sample_comment'],
+                datetime.now().isoformat(),
+                datetime.now().isoformat()
             ))
             
             obs_conn.commit()
             
-            # Refresh Home tab stats FIRST (before showing dialog)
-            if hasattr(self.app, 'tabs') and 'Home' in self.app.tabs:
-                home_tab = self.app.tabs['Home']
-                if hasattr(home_tab, '_update_stats'):
-                    try:
-                        home_tab._update_stats()
-                        self.app.root.update()  # Force FULL UI update
-                    except Exception as e:
-                        logger.warning(f"Failed to refresh stats: {e}")
-            
-            # NOW show success dialog (stats are already updated in background!)
+            # Success!
             messagebox.showinfo(
                 "Record Saved",
-                f"Observation record for {record_data['species_name']} has been saved successfully!\n\n"
-                f"TVK: {record_data['taxon_id']}"
+                f"Successfully saved record for {record['species_name']}"
             )
             
-            logger.info(f"Saved record: {record_data['species_name']} (TVK: {record_data['taxon_id']})")
+            logger.info(f"Saved record: {record['species_name']} at {record['site_name']}")
             
-            # Clear form after successful submission
+            # Update status
+            if hasattr(self.app, 'update_status'):
+                self.app.update_status(f"Record saved: {record['species_name']}")
+            
+            # Refresh Home tab stats
+            if hasattr(self.app, 'tabs') and 'Home' in self.app.tabs:
+                if hasattr(self.app.tabs['Home'], '_update_stats'):
+                    self.app.tabs['Home']._update_stats()
+            
+            # Clear form for next entry
             self._clear_form()
             
         except Exception as e:
@@ -624,22 +542,26 @@ class AddRecordWidget(ttk.LabelFrame):
                 "Database Error",
                 f"Failed to save record:\n\n{str(e)}"
             )
-        
+    
     def _clear_form(self):
-        """Clear all form fields (except defaults from settings)"""
+        """Clear all form fields"""
         self.species_var.set("")
-        self.selected_species = None  # Reset selected species
+        self.selected_species = None
+        self.species_status.config(text="", foreground="gray")
+        
         self.site_var.set("")
         self.gridref_var.set("")
-        self.date_var.set(datetime.now().strftime("%Y-%m-%d"))
+        self.gridref_status.config(text="", foreground="gray")
         
-        # Keep defaults from settings
-        self.recorder_var.set(self.settings.get('default_recorder', ''))
-        self.determiner_var.set(self.settings.get('default_determiner', ''))
-        self.certainty_var.set(self.settings.get('default_certainty', 'Certain'))
+        self.date_var.set(datetime.now().strftime("%Y-%m-%d"))
         
         self.sex_var.set("")
         self.quantity_var.set("")
-        self.sample_method_var.set(self.settings.get('default_sample_method', ''))
-        self.obs_type_var.set(self.settings.get('default_observation_type', ''))
+        
         self.comment_text.delete("1.0", tk.END)
+        
+        # Re-apply defaults for recorder, determiner, etc.
+        self._apply_defaults()
+        
+        # Focus on species search
+        self.species_entry.focus_set()
